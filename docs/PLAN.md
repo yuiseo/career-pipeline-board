@@ -74,7 +74,7 @@ src/
 | 완료 | 커밋 | 내용 | 완료 조건 |
 |---|---|---|---|
 | [x] | `feat(api-client)` | fetch 래퍼와 `ApiError`, candidates API 함수 3종, QueryClient 재시도 정책(조회 1회, mutation 0회) | 실패 응답이 `ApiError`로 전달됨 |
-| [ ] | `feat(candidate-list-query)` | 목록 조회, stage별 컬럼 분류, 보드에 연결, loading/error/empty(전체 0건) 연결 | `?mockFail=1`에서 에러 + 다시 시도, `?mockSeed=0`에서 전체 0건 표시 |
+| [x] | `feat(candidate-list-query)` | 목록 조회, stage별 컬럼 분류, 보드에 연결, loading/error/empty(전체 0건) 연결 | `?mockFail=1`에서 에러 + 다시 시도, `?mockSeed=0`에서 전체 0건 표시 |
 | [ ] | `feat(candidate-detail-query)` | 상세 조회, 패널에 연결, 패널 내부 로딩·에러 | 상세 조회가 실패해도 보드는 그대로 유지됨 |
 | [ ] | `feat(search-filter)` | 필터 순수 함수(이름 공백 제거 후 부분 일치, 직무 OR, 이름 AND 직무, 직무 미선택 = 전체), 검색은 버튼·Enter 시 적용, 직무는 체크 즉시 적용, URL 동기화(`?q=&position=&position=`, `replaceState`), 필터·검색 0건 표시 | 새로고침·링크 공유 시 조건 복원 |
 

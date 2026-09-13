@@ -1338,3 +1338,27 @@ tanstack-query를 통해 API 연동.
 
 - **상태:** build/lint/format/test 통과. 사용자 확인 후 커밋.
 
+
+---
+
+## [candidate-list-query] 목록 조회 · 보드 연결
+
+### 프롬프트 1 (메인 → 서브 에이전트 candidate-list-query)
+
+<details>
+<summary>서브 에이전트 작업 지시 요약</summary>
+
+- useCandidatesQuery + stage 그룹핑 + CandidateBoard 로딩/에러/전체0건
+- 상세 fetch·검색 필터·단계 이동 금지
+
+</details>
+
+### AI 출력 요지
+
+- `CandidateBoard`가 목록 쿼리로 5컬럼·카드를 채움
+- `selectedId` 로컬 상태만 (상세 패널은 다음 커밋)
+
+### 리뷰 / 검증
+
+- **상태:** 사용자 확인 후 커밋. `?mockFail=1` / `?mockSeed=0` 수동 확인.
+
