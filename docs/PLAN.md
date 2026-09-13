@@ -83,7 +83,7 @@ src/
 | 완료 | 커밋 | 내용 | 완료 조건 |
 |---|---|---|---|
 | [x] | `feat(stage-move)` | PATCH 요청, 성공 시 목록·상세 캐시를 서버 응답으로 갱신(TanStack Query), 성공 토스트 | 이동 결과가 새로고침 후에도 유지됨 |
-| [ ] | `feat(optimistic-update)` | 지원자별 이동 상태 저장소(`inFlightTarget`), 표시 단계 파생(`inFlightTarget` → 확인된 단계), 클릭 즉시 반영, 실패 시 확인된 단계로 rollback + 실패 토스트(다시 시도), 같은 단계 선택 무시, 상세 패널도 같은 표시 규칙 사용 | `?mockFail=1`에서 카드가 이동했다가 원래 컬럼으로 돌아오고 토스트가 뜸 |
+| [x] | `feat(optimistic-update)` | 지원자별 이동 상태 저장소(`inFlightTarget`), 표시 단계 파생(`inFlightTarget` → 확인된 단계), 클릭 즉시 반영, 실패 시 확인된 단계로 rollback + 실패 토스트(다시 시도), 같은 단계 선택 무시, 상세 패널도 같은 표시 규칙 사용 | `?mockFail=1`에서 카드가 이동했다가 원래 컬럼으로 돌아오고 토스트가 뜸 |
 
 > `pendingTarget` 직렬화(연속 이동)는 Should의 경쟁 상태 처리에서 추가한다. Must 단계에서는 요청이 진행 중인 카드의 이동 메뉴를 비활성화해 지원자별 동시 요청 1개를 보장한다.
 

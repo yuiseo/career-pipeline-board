@@ -21,6 +21,7 @@
 - **(기본값 처리 가능)** 이름 검색 매칭은 대소문자를 구분하는 `includes`로 둔다. FUNCTIONAL_SPEC에 대소문자 정책이 없어 기본값으로 처리함.
 - **react-grab을 개발 전용으로 반영한다.** UI 요소 디버깅을 쉽게 하기 위해 도입했다. `main.tsx`에서 `import.meta.env.DEV`일 때만 동적 import해 프로덕션 번들에 넣지 않는다. Vite 공식 `index.html` 방식은 html-proxy가 pnpm 패키지를 해석하지 못해 진입 파일로 옮겼다. Cursor agent/MCP 연동은 추가 패키지가 필요해 이번에는 넣지 않음.
 - **(기본값 처리 가능)** 단계 이동 성공 토스트 문구는 `` `${STAGE_LABEL[stage]} 단계로 이동했습니다` ``로 둔다. FUNCTIONAL_SPEC·DESIGN.md에 구체 문구가 없어 정함.
+- **(기본값 처리 가능)** 단계 이동 실패 토스트 문구는 `"단계 이동에 실패했습니다"`로 둔다. 액션 라벨은 AppToast 기본값 `"다시 시도"`를 쓴다. FUNCTIONAL_SPEC·DESIGN.md에 구체 문구가 없어 정함.
 - **(기본값 처리 가능)** 성공 토스트는 3초 후 자동으로 닫는다. presentational `Toaster`는 dismiss를 호출측에 맡기므로, `useToastState`에서 타이머로 처리한다.
 
 ## 2. 주요 설계 결정

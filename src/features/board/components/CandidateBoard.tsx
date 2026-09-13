@@ -5,8 +5,13 @@ import { Button } from "@/components/ui/button"
 import CandidateDetailPanel from "@/features/candidate-detail/components/CandidateDetailPanel"
 import { useCandidateDetailQuery } from "@/features/candidate-detail/hooks/useCandidateDetailQuery"
 import { filterCandidates } from "@/features/filters/filterCandidates"
-import { stageMoveSuccessMessage } from "@/features/stage-move/constants"
+import {
+  STAGE_MOVE_ERROR_MESSAGE,
+  stageMoveSuccessMessage,
+} from "@/features/stage-move/constants"
 import StageMoveMenu from "@/features/stage-move/components/StageMoveMenu"
+import { getDisplayStage } from "@/features/stage-move/getDisplayStage"
+import { useStageMoveStore } from "@/features/stage-move/hooks/useStageMoveStore"
 import { useUpdateCandidateStage } from "@/features/stage-move/hooks/useUpdateCandidateStage"
 import Toaster from "@/features/toast/components/Toaster"
 import { useToastState } from "@/features/toast/hooks/useToastState"
@@ -36,26 +41,36 @@ function CandidateBoard({
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const detailQuery = useCandidateDetailQuery(selectedId)
   const updateStageMutation = useUpdateCandidateStage()
+  const { byCandidateId, setInFlight, clearInFlight, getInFlightTarget } =
+    useStageMoveStore()
   const { toasts, pushToast, dismissToast } = useToastState()
-
-  const inFlightId = updateStageMutation.isPending
-    ? updateStageMutation.variables?.id
-    : undefined
 
   const requestStageMove = (
     id: string,
-    currentStage: Stage,
+    confirmedStage: Stage,
     nextStage: Stage
   ) => {
-    if (nextStage === currentStage) return
+    if (nextStage === confirmedStage) return
+    if (!setInFlight(id, nextStage)) return
 
     updateStageMutation.mutate(
       { id, stage: nextStage },
       {
         onSuccess: (detail) => {
+          clearInFlight(id)
           pushToast({
             variant: "success",
             message: stageMoveSuccessMessage(detail.stage),
+          })
+        },
+        onError: () => {
+          clearInFlight(id)
+          pushToast({
+            variant: "error",
+            message: STAGE_MOVE_ERROR_MESSAGE,
+            onAction: () => {
+              requestStageMove(id, confirmedStage, nextStage)
+            },
           })
         },
       }
@@ -88,11 +103,28 @@ function CandidateBoard({
     return <BoardEmptyView variant="filtered" onResetFilters={onResetFilters} />
   }
 
-  const byStage = groupCandidatesByStage(filtered)
+  const displayCandidates = filtered.map((candidate) => {
+    const inFlightTarget = byCandidateId.get(candidate.id)?.inFlightTarget
+    return {
+      ...candidate,
+      stage: getDisplayStage(candidate.stage, inFlightTarget),
+    }
+  })
+  const byStage = groupCandidatesByStage(displayCandidates)
+  const confirmedStageById = new Map(
+    filtered.map((candidate) => [candidate.id, candidate.stage])
+  )
   const summary =
     selectedId == null
       ? null
       : (data.find((candidate) => candidate.id === selectedId) ?? null)
+  const summaryInFlightTarget =
+    summary == null ? undefined : getInFlightTarget(summary.id)
+  const summaryDisplayStage =
+    summary == null
+      ? undefined
+      : getDisplayStage(summary.stage, summaryInFlightTarget)
+  const summaryIsMoving = summaryInFlightTarget != null
 
   return (
     <>
@@ -105,7 +137,9 @@ function CandidateBoard({
             count={columnCandidates.length}
           >
             {columnCandidates.map((candidate) => {
-              const isMoving = inFlightId === candidate.id
+              const confirmedStage =
+                confirmedStageById.get(candidate.id) ?? candidate.stage
+              const isMoving = getInFlightTarget(candidate.id) != null
 
               return (
                 <CandidateCard
@@ -121,7 +155,7 @@ function CandidateBoard({
                       onSelectStage={(nextStage) => {
                         requestStageMove(
                           candidate.id,
-                          candidate.stage,
+                          confirmedStage,
                           nextStage
                         )
                       }}
@@ -147,11 +181,12 @@ function CandidateBoard({
         onRetry={() => {
           void detailQuery.refetch()
         }}
+        displayStage={summaryDisplayStage}
         stageMoveSlot={
-          summary ? (
+          summary && summaryDisplayStage != null ? (
             <StageMoveMenu
-              currentStage={summary.stage}
-              disabled={inFlightId === summary.id}
+              currentStage={summaryDisplayStage}
+              disabled={summaryIsMoving}
               onSelectStage={(nextStage) => {
                 requestStageMove(summary.id, summary.stage, nextStage)
               }}
@@ -160,7 +195,7 @@ function CandidateBoard({
                   type="button"
                   variant="outline"
                   className="w-full"
-                  disabled={inFlightId === summary.id}
+                  disabled={summaryIsMoving}
                 >
                   단계 변경
                 </Button>

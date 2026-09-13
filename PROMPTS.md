@@ -1459,3 +1459,29 @@ README.md 의 경우도 따로 커밋할 것
 - **판단:** 브라우저에서 단계 이동 → 성공 토스트 → 새로고침 후 유지를 확인함.
 - **결과:** 채택 후 커밋.
 
+
+---
+
+## [optimistic-update] 낙관적 단계 이동 · 실패 롤백
+
+### 프롬프트 1 (메인 → 서브 에이전트 optimistic-update)
+
+<details>
+<summary>서브 에이전트 작업 지시 요약</summary>
+
+- inFlightTarget 스토어, 표시 단계 파생, 즉시 컬럼 반영
+- 실패 시 rollback + 다시 시도 토스트
+- pendingTarget 금지 (Should)
+
+</details>
+
+### AI 출력 요지
+
+- `useStageMoveStore` + `getDisplayStage`
+- 카드·상세 모두 표시 단계 규칙 공유
+
+### 리뷰 / 검증
+
+- **판단:** 브라우저에서 `?mockFail=1` 시 카드가 이동했다가 원위치하고 실패 토스트·다시 시도를 확인함.
+- **결과:** 채택 후 커밋.
+
