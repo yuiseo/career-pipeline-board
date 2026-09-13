@@ -4,3 +4,4 @@ pnpm-lock.yaml
 # 사람이 쓰는 기록 문서는 자동 포맷하지 않는다
 *.md
 docs/
+public/mockServiceWorker.js

@@ -6,10 +6,15 @@ import App from "./App.tsx"
 
 const queryClient = new QueryClient()
 
-createRoot(document.getElementById("root")!).render(
-  <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <App />
-    </QueryClientProvider>
-  </StrictMode>
-)
+/** mock API(MSW)는 별도 청크로 분리해 불러온 뒤, 워커가 준비되면 앱을 렌더링한다. */
+import("./mocks/browser")
+  .then(({ startMockApi }) => startMockApi())
+  .then(() => {
+    createRoot(document.getElementById("root")!).render(
+      <StrictMode>
+        <QueryClientProvider client={queryClient}>
+          <App />
+        </QueryClientProvider>
+      </StrictMode>
+    )
+  })

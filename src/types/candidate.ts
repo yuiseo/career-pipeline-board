@@ -59,3 +59,9 @@ export const candidateDetailSchema = candidateSummarySchema.extend({
   education: z.string(),
 })
 export type CandidateDetail = z.infer<typeof candidateDetailSchema>
+
+/** 단계 변경 요청 본문 (PATCH /api/candidates/:id/stage) */
+export const updateStageRequestSchema = z.object({
+  stage: stageSchema,
+})
+export type UpdateStageRequest = z.infer<typeof updateStageRequestSchema>

@@ -859,3 +859,100 @@ Zod: 승인, 외부 입력 전체
 - **문제:** 스키마를 통해 타입 추론을 쉽게 가져가는 아키텍처를 계획 시점에 누락함. 구현 시점에 AGENTS.md 규칙으로 정리하면서 반영함.
 - **판단:** 타입을 Zod 스키마에서 추론하도록 바꾸고, 매직 넘버 등을 이름 있는 상수로 정의해 재사용할 수 있게 변경한 방향을 채택함.
 - **확인:** 현재 구현 사항(스키마·저장 데이터 검증·상수화)과 메인 에이전트 검증표를 확인 완료함.
+
+---
+
+## [mock-api] MSW 핸들러 · 지연/실패 · 시연 제어
+
+### 프롬프트 (확인 질문 응답)
+
+```
+배포 환경: MSW·시연 제어 모두 항상 켬
+시연 제어: mockSeed=0은 저장, mockFail은 요청 시점 URL 기준
+```
+
+### AI 출력 요지
+
+- `msw` 설치(배포에서도 쓰므로 dependencies), `public/mockServiceWorker.js` 생성
+- `src/mocks/handlers.ts`: `createHandlers({ db, failRate, delay })` — 목록(요약 필드만) / 상세 / 단계 변경. 처리 순서는 지연 → 실패 판정(500) → 404 → 400 → 저장
+- `src/mocks/config.ts`: 200~800ms 무작위 지연, `resolveFailRate`(요청마다 URL 판단), `applyDataCommands`(`mockReset`/`mockSeed` 적용 후 URL에서 제거)
+- `src/mocks/browser.ts`: localStorage db + 워커 시작, `src/main.tsx`: 워커가 준비된 뒤 렌더링
+- `src/types/candidate.ts`: `isStage` 타입 가드 추가
+
+### 메인 에이전트 검증
+
+**1차에서 발견해 수정한 문제**
+
+| 문제 | 발견 경로 | 수정 |
+|---|---|---|
+| 번들 245KB → 670KB, 500KB 청크 경고 | `pnpm build` 출력 | `main.tsx`에서 mock 모듈을 동적 import해 별도 청크로 분리 (index 246KB + browser 425KB) |
+| 생성 파일 `mockServiceWorker.js`에 ESLint 경고 | `pnpm lint` 출력 | ESLint `globalIgnores`와 `.prettierignore`에 추가 |
+| `pnpm format`이 생성 워커 파일을 재포맷함 | 파일 비교 | msw 패키지 원본으로 되돌리고 `cmp`로 동일함을 확인 |
+| `pnpm format`이 다른 세션이 커밋한 `DESIGN.md`의 표 정렬을 바꿈 | `git status`에 건드리지 않은 파일이 수정됨으로 표시 | 내용 변경 없음을 diff로 확인. `.prettierignore`를 파일명 나열에서 `*.md` 패턴으로 바꿔 별도 `chore(format)` 커밋 |
+| `msw init`이 대화형 입력을 기다리며 멈춤 | 명령 시간 초과 | 작업 중단 후 패키지 원본 파일을 복사하는 방식으로 대체 |
+
+**동작 검증** (커밋하지 않는 임시 스크립트, MSW Node 환경)
+
+| 확인 항목 | 결과 |
+|---|---|
+| 목록 응답 | 1,000건, 필드 `id·name·position·appliedAt·stage`만 포함 |
+| 상세 응답 | 상세 필드 4개 포함 |
+| 없는 id 상세 / 단계 변경 | 404 / 404 |
+| 잘못된 stage · JSON이 아닌 본문 | 400 / 400, `{ message }` |
+| 단계 변경 성공 | 200, 응답과 저장소 모두 변경됨 |
+| 실패 강제(`failRate: 1`) | 500 `{ message }`, 저장소 변경 없음 |
+| 실패율 0.15로 2,000회 요청 | 실패 비율 14.55% |
+| 지연 250ms 주입 | 실제 소요 253ms |
+| `randomDelayMs` 10,000회 | 최소 200ms, 최대 800ms |
+| `resolveFailRate` | 기본 0.15, `mockFail=1` → 1, `mockFail=0` → 0 |
+| `?q=홍&mockFail=1&mockSeed=0` | 데이터 0건, URL에는 `q`·`mockFail`만 남음 |
+| `?mockReset=1` | 데이터 1,000건 복구, URL에서 제거 |
+
+- `pnpm build` / `lint` / `test` / `format:check` 통과
+- 브라우저에서 서비스 워커가 실제로 요청을 가로채는지는 아직 화면에서 API를 호출하지 않아 확인하지 못함 → 사용자가 브라우저 콘솔로 확인 (아래 리뷰)
+- 문서 반영: DECISIONS 2-2, FUNCTIONAL_SPEC 5.3(개발 환경 전용 → 모든 환경), PLAN(`createHandlers` 인자 이름, 시연 제어 환경)
+
+### 프롬프트 2 (AGENTS.md 규칙 적용 요청)
+
+```
+서브에이전트에서 stash 한 것을 zod를 반영하여 refactoring한 후 완료되면 구현 사항을 요약해서 나에게 다시 알려줘.
+```
+
+### 프롬프트 3 (메인 에이전트 → 서브 에이전트 mock-api-refactor)
+
+<details>
+<summary>서브 에이전트 작업 지시 요약</summary>
+
+- 커밋·패키지 설치·문서 수정 금지, AGENTS.md와 DECISIONS 2-2, 커밋된 `types/candidate.ts`·`db.ts` 패턴을 먼저 읽을 것
+- 동작은 유지하고 다음을 리팩터링
+  1. API 경로를 `src/api/` 공유 상수로 (클라이언트·mock 공용, MSW `:id` 패턴 포함)
+  2. HTTP 상태 코드 200/400/404/500 상수화
+  3. 에러 응답 `{ message }`·PATCH 본문 `{ stage }` Zod 스키마 + `z.infer`, 본문 검증을 `safeParse`로 교체하고 `isStage` 제거
+  4. `mockFail`/`mockSeed`/`mockReset` 이름 상수화, 값은 Zod로 검증(허용값 외 무시)
+  5. 강제 실패율·빈 시드 건수 등 매직 넘버와 에러 응답 메시지 상수화
+- 검증: build/lint/test/format:check + MSW Node 임시 스크립트(목록·상세·404·400·500·실패율·지연·쿼리 제어) 실행 후 삭제
+- 보고: 파일별 역할, 규칙별 변경과 판단 근거, 검증 결과표, 남은 결정 사항
+
+</details>
+
+### AI 출력 요지 (서브 에이전트 결과)
+
+- 신규 `src/api/endpoints.ts`: `API_PATHS`(클라이언트용, id `encodeURIComponent`) / `API_ROUTE_PATTERNS`(MSW `:id` 패턴)를 같은 내부 빌더로 생성. 한 함수로 합치면 `:`가 `%3A`로 인코딩되어 패턴이 깨지기 때문
+- 신규 `src/api/http.ts`: `HTTP_STATUS`, `apiErrorSchema`·`ApiError`
+- `src/types/candidate.ts`: `updateStageRequestSchema`·`UpdateStageRequest` 추가
+- `src/mocks/handlers.ts`: 공유 경로·상태 상수, `ERROR_MESSAGE` 상수, 본문 `safeParse`(JSON 파싱 실패도 400), `isStage`·형변환 제거. 목록 응답은 `toSummary` 유지(서버 내부 데이터라 외부 입력이 아니고, 1,000건 매 요청 parse 비용 회피, 반환 타입으로 필드 누락을 컴파일 시점에 잡음)
+- `src/mocks/config.ts`: `MOCK_QUERY_PARAM` 이름 상수, `mockFailSchema`·`mockSeedSchema`·`mockResetSchema`로 값 검증, `ALWAYS_FAIL_RATE`·`NEVER_FAIL_RATE`·`EMPTY_SEED_COUNT` 상수
+- 임시 검증 결과: 목록 1,000건·키 5개, 상세 키 9개, 404/400/500 응답과 저장 변경 없음, 실패율 0.148(2,000회), 지연 250 → 257ms, 쿼리 제어 동작 동일, `mockFail=abc`는 기본 0.15, 허용값 밖 `mockSeed=5`는 무시
+- 남은 결정 사항 보고: JSON 파싱 실패 메시지를 따로 둘지, 검색·필터 URL 파라미터 이름 상수를 mock 상수와 한곳에 모을지, `EMPTY_SEED_COUNT` 위치
+
+### 메인 에이전트 검증 (리팩터링 결과)
+
+- `src/api/*`, `src/mocks/config.ts`, `src/mocks/handlers.ts`, `src/types/candidate.ts` diff를 정독. 남은 리터럴은 상수 정의부뿐이고 `any` 없음, `as`는 `as const`뿐임을 grep으로 확인
+- build / lint / test / format:check 직접 재실행 → 통과
+- 참고: zod가 mock 청크에 포함되어 `browser` 청크가 425KB → 510KB로 커지면서 500KB 경고가 다시 나타남 (빌드 실패는 아님, 이후 번들 분할 여부 결정 필요)
+- `API_PATHS`, `apiErrorSchema`, `UpdateStageRequest`는 아직 사용처가 없고 3단계 `feat(api-client)`에서 사용할 예정
+
+### 리뷰 / 검증
+
+- **검증 방법:** 개발 서버를 띄우고 브라우저 콘솔에서 mock API를 호출해 JSON 응답을 불러오는 방식으로 직접 검증함.
+- **판단:** 서브 에이전트가 AGENTS.md 규칙(Zod 스키마·상수화)을 반영해 리팩터링한 mock API 기능을 검증 완료하고, 커밋 규칙에 따라 커밋하도록 함.

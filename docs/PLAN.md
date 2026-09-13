@@ -20,7 +20,7 @@ src/
     config.ts                 # 지연·실패율, URL 쿼리 시연 제어
     db.ts                     # localStorage 저장소 (버전 키)
     seed.ts                   # 시드 생성기 (고정 결과)
-    handlers.ts               # createHandlers({ failRate, delay, storage })
+    handlers.ts               # createHandlers({ db, failRate, delay })
     browser.ts                # 브라우저 워커 시작
   api/
     client.ts                 # fetch 래퍼, ApiError
@@ -46,7 +46,7 @@ src/
 | 완료 | 커밋 | 내용 | 완료 조건 |
 |---|---|---|---|
 | [x] | `feat(candidate-model)` | 타입 정의(`Stage` 5종, `CandidateSummary`, `CandidateDetail`, 직무 목록), 시드 생성기(기본 1,000건, 같은 입력이면 같은 결과), localStorage 저장소(버전 키가 없거나 다르면 시드 재생성) | 새로고침해도 같은 데이터가 유지됨 |
-| [ ] | `feat(mock-api)` | MSW 설치·워커 설정, 핸들러 3종, 모든 요청에 200~800ms 지연 + 15% 실패(500 + `{ message }`), 시연 제어(`?mockFail=1/0`, `?mockSeed=0`, `?mockReset=1`, 개발 환경 전용) | 개발자도구 Network에서 지연·실패가 보이고, PATCH 결과가 새로고침 후에도 유지됨 |
+| [x] | `feat(mock-api)` | MSW 설치·워커 설정, 핸들러 3종, 모든 요청에 200~800ms 지연 + 15% 실패(500 + `{ message }`), 시연 제어(`?mockFail=1/0`, `?mockSeed=0`, `?mockReset=1`, 개발·배포 환경 모두) | 개발자도구 Network에서 지연·실패가 보이고, PATCH 결과가 새로고침 후에도 유지됨 |
 
 **API 규약**
 
@@ -89,7 +89,7 @@ src/
 
 ## 5. Must 테스트
 
-MSW Node 환경(`setupServer`)에서 `createHandlers({ failRate: 0, delay: 0 })`를 기본으로 쓰고, 실패 테스트만 `failRate: 1`을 주입한다.
+MSW Node 환경(`setupServer`)에서 `createHandlers({ db, failRate: 0, delay: 0 })`를 기본으로 쓰고(db는 메모리 저장소 주입), 실패 테스트만 `failRate: 1`을 주입한다.
 
 | 완료 | 커밋 | 체크리스트 |
 |---|---|---|
