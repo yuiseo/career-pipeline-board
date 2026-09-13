@@ -17,11 +17,11 @@ const STAGE_BADGE_CLASS: Record<Stage, string> = {
 function StageBadge({ stage, className }: StageBadgeProps) {
   return (
     <span
-      className={cn(
-        "inline-flex h-5 items-center rounded-full px-2 text-meta font-medium",
+      className={`text-meta ${cn(
+        "inline-flex h-5 items-center rounded-full px-2 font-medium",
         STAGE_BADGE_CLASS[stage],
         className
-      )}
+      )}`}
     >
       {STAGE_LABEL[stage]}
     </span>

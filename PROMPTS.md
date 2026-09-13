@@ -1485,3 +1485,34 @@ README.md 의 경우도 따로 커밋할 것
 - **판단:** 브라우저에서 `?mockFail=1` 시 카드가 이동했다가 원위치하고 실패 토스트·다시 시도를 확인함.
 - **결과:** 채택 후 커밋.
 
+
+---
+
+## [stage-badge] 단계 배지 글자 크기
+
+### 프롬프트 1
+
+```
+[<span class="inline-flex ...">서류검토</span> in StageBadge (at StageBadge.tsx) in CandidateCard (at CandidateCard.tsx) in CandidateBoard.tsx key: "c-0019"]
+
+현재 StateBadge의 글씨가 너무 크게 작성되어 있어 글자 크기를 다른 요소에 맞춰 변경할 것.
+```
+
+### 프롬프트 2
+
+```
+해당 변경 지시 PROMPTS.md 남겨두고 commit 메시지 나에게 먼저 보여줘
+```
+
+### AI 출력 요지
+
+- 계산된 글자 크기: 이름 13.5px · 직무 12px · 지원일 11px · 배지 16px
+- 원인: `cn()`이 `text-meta`(글자 크기)와 `text-stage-*-text`(색)를 같은 `text-*`로 병합해 `text-meta`를 버림
+- `text-meta`를 `cn()` 밖에 두어 지원일과 같은 11px이 적용되게 함
+- 보드에서 배지·지원일 모두 11px인 것을 확인함
+
+### 리뷰 / 검증
+
+- **판단:** 커밋 메시지를 확인한 뒤 채택함.
+- **결과:** 채택 후 커밋.
+
