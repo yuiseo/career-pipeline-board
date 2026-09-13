@@ -5,17 +5,11 @@ import { Button } from "@/components/ui/button"
 import CandidateDetailPanel from "@/features/candidate-detail/components/CandidateDetailPanel"
 import { useCandidateDetailQuery } from "@/features/candidate-detail/hooks/useCandidateDetailQuery"
 import { filterCandidates } from "@/features/filters/filterCandidates"
-import {
-  STAGE_MOVE_ERROR_MESSAGE,
-  stageMoveSuccessMessage,
-} from "@/features/stage-move/constants"
 import StageMoveMenu from "@/features/stage-move/components/StageMoveMenu"
 import { getDisplayStage } from "@/features/stage-move/getDisplayStage"
-import { useStageMoveStore } from "@/features/stage-move/hooks/useStageMoveStore"
-import { useUpdateCandidateStage } from "@/features/stage-move/hooks/useUpdateCandidateStage"
+import { useStageMoveController } from "@/features/stage-move/hooks/useStageMoveController"
 import Toaster from "@/features/toast/components/Toaster"
-import { useToastState } from "@/features/toast/hooks/useToastState"
-import type { Position, Stage } from "@/types/candidate"
+import type { Position } from "@/types/candidate"
 import { STAGES } from "@/types/candidate"
 
 import { useCandidatesQuery } from "../hooks/useCandidatesQuery"
@@ -40,42 +34,13 @@ function CandidateBoard({
   const { data, error, isPending, isError, refetch } = useCandidatesQuery()
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const detailQuery = useCandidateDetailQuery(selectedId)
-  const updateStageMutation = useUpdateCandidateStage()
-  const { byCandidateId, setInFlight, clearInFlight, getInFlightTarget } =
-    useStageMoveStore()
-  const { toasts, pushToast, dismissToast } = useToastState()
-
-  const requestStageMove = (
-    id: string,
-    confirmedStage: Stage,
-    nextStage: Stage
-  ) => {
-    if (nextStage === confirmedStage) return
-    if (!setInFlight(id, nextStage)) return
-
-    updateStageMutation.mutate(
-      { id, stage: nextStage },
-      {
-        onSuccess: (detail) => {
-          clearInFlight(id)
-          pushToast({
-            variant: "success",
-            message: stageMoveSuccessMessage(detail.stage),
-          })
-        },
-        onError: () => {
-          clearInFlight(id)
-          pushToast({
-            variant: "error",
-            message: STAGE_MOVE_ERROR_MESSAGE,
-            onAction: () => {
-              requestStageMove(id, confirmedStage, nextStage)
-            },
-          })
-        },
-      }
-    )
-  }
+  const {
+    byCandidateId,
+    getMoveState,
+    requestStageMove,
+    toasts,
+    dismissToast,
+  } = useStageMoveController()
 
   if (isPending) {
     return <BoardLoadingSkeleton />
@@ -104,10 +69,10 @@ function CandidateBoard({
   }
 
   const displayCandidates = filtered.map((candidate) => {
-    const inFlightTarget = byCandidateId.get(candidate.id)?.inFlightTarget
+    const moveState = byCandidateId.get(candidate.id)
     return {
       ...candidate,
-      stage: getDisplayStage(candidate.stage, inFlightTarget),
+      stage: getDisplayStage(candidate.stage, moveState),
     }
   })
   const byStage = groupCandidatesByStage(displayCandidates)
@@ -118,13 +83,13 @@ function CandidateBoard({
     selectedId == null
       ? null
       : (data.find((candidate) => candidate.id === selectedId) ?? null)
-  const summaryInFlightTarget =
-    summary == null ? undefined : getInFlightTarget(summary.id)
+  const summaryMoveState =
+    summary == null ? undefined : getMoveState(summary.id)
   const summaryDisplayStage =
     summary == null
       ? undefined
-      : getDisplayStage(summary.stage, summaryInFlightTarget)
-  const summaryIsMoving = summaryInFlightTarget != null
+      : getDisplayStage(summary.stage, summaryMoveState)
+  const summaryIsMoving = summaryMoveState?.inFlightTarget != null
 
   return (
     <>
@@ -139,7 +104,8 @@ function CandidateBoard({
             {columnCandidates.map((candidate) => {
               const confirmedStage =
                 confirmedStageById.get(candidate.id) ?? candidate.stage
-              const isMoving = getInFlightTarget(candidate.id) != null
+              const isMoving =
+                getMoveState(candidate.id)?.inFlightTarget != null
 
               return (
                 <CandidateCard
@@ -151,7 +117,6 @@ function CandidateBoard({
                   stageMoveSlot={
                     <StageMoveMenu
                       currentStage={candidate.stage}
-                      disabled={isMoving}
                       onSelectStage={(nextStage) => {
                         requestStageMove(
                           candidate.id,
@@ -186,18 +151,12 @@ function CandidateBoard({
           summary && summaryDisplayStage != null ? (
             <StageMoveMenu
               currentStage={summaryDisplayStage}
-              disabled={summaryIsMoving}
               onSelectStage={(nextStage) => {
                 requestStageMove(summary.id, summary.stage, nextStage)
               }}
               trigger={
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full"
-                  disabled={summaryIsMoving}
-                >
-                  단계 변경
+                <Button type="button" variant="outline" className="w-full">
+                  {summaryIsMoving ? "이동 중…" : "단계 변경"}
                 </Button>
               }
             />

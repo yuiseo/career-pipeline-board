@@ -22,7 +22,7 @@ interface CandidateCardProps {
   selected?: boolean
   /** 상단 행 우측 — 단계 변경 트리거 슬롯 (메뉴는 부모가 주입) */
   stageMoveSlot?: ReactNode
-  /** 단계 이동 요청 진행 중 — 트리거 자리에 스피너 + "이동 중" */
+  /** 단계 이동 요청 진행 중 — 스피너 + "이동 중" (메뉴는 유지, SR-01) */
   isMoving?: boolean
 }
 
@@ -56,7 +56,7 @@ function CandidateCard({
       onClick={openDetail}
       onKeyDown={handleKeyDown}
       className={cn(
-        "flex cursor-pointer flex-col gap-1.5 rounded-lg border border-border bg-card p-2.5 shadow-xs",
+        "flex w-full min-w-0 cursor-pointer flex-col gap-1.5 rounded-lg border border-border bg-card p-2.5 shadow-xs",
         "text-left outline-none",
         FOCUS_RING_CLASS,
         selected && SELECTED_RING_CLASS
@@ -73,7 +73,7 @@ function CandidateCard({
         </div>
         {(stageMoveSlot != null || isMoving) && (
           <div
-            className="shrink-0"
+            className="flex shrink-0 items-center gap-1"
             onClick={(event) => {
               event.stopPropagation()
             }}
@@ -89,9 +89,8 @@ function CandidateCard({
                 <Loader2 className="size-3.5 animate-spin" aria-hidden="true" />
                 {MOVING_LABEL}
               </span>
-            ) : (
-              stageMoveSlot
-            )}
+            ) : null}
+            {stageMoveSlot}
           </div>
         )}
       </div>

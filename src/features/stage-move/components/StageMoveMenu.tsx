@@ -29,7 +29,7 @@ const DEFAULT_TRIGGER_ARIA_LABEL = "단계 변경"
 interface StageMoveMenuProps {
   currentStage: Stage
   onSelectStage: (stage: Stage) => void
-  /** 요청 진행 중(in-flight)일 때 메뉴 비활성화 */
+  /** 필요 시 메뉴 비활성화 (SR-01: 이동 중에도 기본 활성) */
   disabled?: boolean
   /** 미지정 시 MoreHorizontal 아이콘 버튼 */
   trigger?: ReactNode
