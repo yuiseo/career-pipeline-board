@@ -1115,3 +1115,37 @@ DESIGN.md에 없는 값을 서브에이전트가 정한 부분은 현재 상태�
 
 - **판단:** 서브 에이전트로 한 단계씩 진행하는 방식이 작업 속도가 너무 느리다고 판단함. 이번 `board-column`까지의 변경사항만 이 세션에서 마무리하고, 이후 UI 단계(`candidate-card`부터)는 Cursor에서 구현하기로 함 (AGENTS.md 공통 규칙을 그대로 따름).
 - **세부 값:** DESIGN.md에 없어 서브 에이전트가 정한 헤더 여백·카운트 배지 스타일·빈 문구 여백은 사용자 브라우저 확인 전이므로 DECISIONS.md에 `(기본값 처리 가능)` 가정으로 기록함.
+
+---
+
+## [candidate-card] 지원자 카드
+
+### 프롬프트 1
+
+```
+docs/PLAN.md:65-70 UI를 DESIGN.md 참고해 작성하고 CONTRIBUTING에 따라 기능별 커밋.
+각 기능 UI는 서브에이전트로 병렬 처리.
+```
+
+### 프롬프트 2 (메인 → 서브 에이전트 candidate-card)
+
+<details>
+<summary>서브 에이전트 작업 지시 요약</summary>
+
+- `feat(candidate-card)`만 구현. 커밋·패키지 설치·App 연결·StageMoveMenu 금지
+- DESIGN §3-3: 이름·직무·지원일·StageBadge, 클릭 시 onOpenDetail, stageMoveSlot stopPropagation
+- 기존 StageBadge·타이포 토큰 사용
+
+</details>
+
+### AI 출력 요지
+
+- `CandidateCard.tsx`: `<li>` presentational, props `candidate`·`onOpenDetail`·`selected?`·`stageMoveSlot?`·`isMoving?`
+- 선택 시 `ring-3 ring-ring`, 이동 중 스피너+"이동 중"
+- 지원일 YYYY-MM-DD 그대로
+
+### 리뷰 / 검증
+
+- **상태:** 코드·build/lint 통과. 브라우저 시각 확인은 사용자 확인 대기.
+- **가정:** 카드 패딩·지원일 포맷은 DECISIONS `(기본값 처리 가능)`.
+
