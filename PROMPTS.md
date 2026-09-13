@@ -1427,3 +1427,35 @@ README.md 의 경우도 따로 커밋할 것
 
 - **판단:** 배포 URL을 README에 별도 커밋으로 반영.
 
+
+---
+
+## [stage-move] 단계 이동 mutation · 성공 토스트
+
+### 프롬프트 1
+
+```
+서브에이전트를 통해 PLAN.md:81-88 구현.
+```
+
+### 프롬프트 2 (메인 → 서브 에이전트 stage-move)
+
+<details>
+<summary>서브 에이전트 작업 지시 요약</summary>
+
+- PATCH + 성공 시 목록·상세 캐시 갱신 + 성공 토스트
+- 낙관적 UI/rollback은 다음 커밋
+- in-flight 중 해당 카드 메뉴 비활성
+
+</details>
+
+### AI 출력 요지
+
+- `useUpdateCandidateStage`, `useToastState`, 카드·상세에 StageMoveMenu 연결
+- 성공 전 컬럼 미변경
+
+### 리뷰 / 검증
+
+- **판단:** 브라우저에서 단계 이동 → 성공 토스트 → 새로고침 후 유지를 확인함.
+- **결과:** 채택 후 커밋.
+

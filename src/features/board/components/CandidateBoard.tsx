@@ -1,10 +1,16 @@
 import { useState } from "react"
 
 import { ApiError } from "@/api/http"
+import { Button } from "@/components/ui/button"
 import CandidateDetailPanel from "@/features/candidate-detail/components/CandidateDetailPanel"
 import { useCandidateDetailQuery } from "@/features/candidate-detail/hooks/useCandidateDetailQuery"
 import { filterCandidates } from "@/features/filters/filterCandidates"
-import type { Position } from "@/types/candidate"
+import { stageMoveSuccessMessage } from "@/features/stage-move/constants"
+import StageMoveMenu from "@/features/stage-move/components/StageMoveMenu"
+import { useUpdateCandidateStage } from "@/features/stage-move/hooks/useUpdateCandidateStage"
+import Toaster from "@/features/toast/components/Toaster"
+import { useToastState } from "@/features/toast/hooks/useToastState"
+import type { Position, Stage } from "@/types/candidate"
 import { STAGES } from "@/types/candidate"
 
 import { useCandidatesQuery } from "../hooks/useCandidatesQuery"
@@ -29,6 +35,32 @@ function CandidateBoard({
   const { data, error, isPending, isError, refetch } = useCandidatesQuery()
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const detailQuery = useCandidateDetailQuery(selectedId)
+  const updateStageMutation = useUpdateCandidateStage()
+  const { toasts, pushToast, dismissToast } = useToastState()
+
+  const inFlightId = updateStageMutation.isPending
+    ? updateStageMutation.variables?.id
+    : undefined
+
+  const requestStageMove = (
+    id: string,
+    currentStage: Stage,
+    nextStage: Stage
+  ) => {
+    if (nextStage === currentStage) return
+
+    updateStageMutation.mutate(
+      { id, stage: nextStage },
+      {
+        onSuccess: (detail) => {
+          pushToast({
+            variant: "success",
+            message: stageMoveSuccessMessage(detail.stage),
+          })
+        },
+      }
+    )
+  }
 
   if (isPending) {
     return <BoardLoadingSkeleton />
@@ -72,14 +104,32 @@ function CandidateBoard({
             stage={stage}
             count={columnCandidates.length}
           >
-            {columnCandidates.map((candidate) => (
-              <CandidateCard
-                key={candidate.id}
-                candidate={candidate}
-                selected={selectedId === candidate.id}
-                onOpenDetail={setSelectedId}
-              />
-            ))}
+            {columnCandidates.map((candidate) => {
+              const isMoving = inFlightId === candidate.id
+
+              return (
+                <CandidateCard
+                  key={candidate.id}
+                  candidate={candidate}
+                  selected={selectedId === candidate.id}
+                  onOpenDetail={setSelectedId}
+                  isMoving={isMoving}
+                  stageMoveSlot={
+                    <StageMoveMenu
+                      currentStage={candidate.stage}
+                      disabled={isMoving}
+                      onSelectStage={(nextStage) => {
+                        requestStageMove(
+                          candidate.id,
+                          candidate.stage,
+                          nextStage
+                        )
+                      }}
+                    />
+                  }
+                />
+              )
+            })}
           </BoardColumn>
         )
       })}
@@ -97,7 +147,29 @@ function CandidateBoard({
         onRetry={() => {
           void detailQuery.refetch()
         }}
+        stageMoveSlot={
+          summary ? (
+            <StageMoveMenu
+              currentStage={summary.stage}
+              disabled={inFlightId === summary.id}
+              onSelectStage={(nextStage) => {
+                requestStageMove(summary.id, summary.stage, nextStage)
+              }}
+              trigger={
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  disabled={inFlightId === summary.id}
+                >
+                  단계 변경
+                </Button>
+              }
+            />
+          ) : null
+        }
       />
+      <Toaster toasts={toasts} onDismiss={dismissToast} />
     </>
   )
 }
