@@ -1362,3 +1362,26 @@ tanstack-query를 통해 API 연동.
 
 - **상태:** 사용자 확인 후 커밋. `?mockFail=1` / `?mockSeed=0` 수동 확인.
 
+
+---
+
+## [candidate-detail-query] 상세 조회 · 패널 연결
+
+### 프롬프트 1 (메인 → 서브 에이전트 candidate-detail-query)
+
+<details>
+<summary>서브 에이전트 작업 지시 요약</summary>
+
+- useCandidateDetailQuery + CandidateDetailPanel 연결
+- summary는 목록 캐시, 로딩/에러는 패널 내부만
+
+</details>
+
+### AI 출력 요지
+
+- 카드 클릭 시 패널 오픈, 상세 실패해도 보드 유지
+
+### 리뷰 / 검증
+
+- **상태:** 사용자 확인 후 커밋.
+
