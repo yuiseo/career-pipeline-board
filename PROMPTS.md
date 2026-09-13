@@ -1149,3 +1149,27 @@ docs/PLAN.md:65-70 UI를 DESIGN.md 참고해 작성하고 CONTRIBUTING에 따라
 - **상태:** 코드·build/lint 통과. 브라우저 시각 확인은 사용자 확인 대기.
 - **가정:** 카드 패딩·지원일 포맷은 DECISIONS `(기본값 처리 가능)`.
 
+
+---
+
+## [stage-move-ui] 단계 이동 메뉴
+
+### 프롬프트 1 (메인 → 서브 에이전트 stage-move-ui)
+
+<details>
+<summary>서브 에이전트 작업 지시 요약</summary>
+
+- `feat(stage-move-ui)`만. DESIGN §4-2: 진행 단계 + 구분선 + 불합격 처리, 현재는 muted+"현재" 비활성
+- dropdown-menu 사용, App/CandidateCard 미연결
+
+</details>
+
+### AI 출력 요지
+
+- `StageMoveMenu.tsx` + `getMovableStages.ts`
+- 트리거 stopPropagation, disabled로 in-flight 지원
+
+### 리뷰 / 검증
+
+- **상태:** build/lint 통과. App 미연결. 브라우저 확인 대기.
+
