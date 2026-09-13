@@ -1173,3 +1173,27 @@ docs/PLAN.md:65-70 UI를 DESIGN.md 참고해 작성하고 CONTRIBUTING에 따라
 
 - **상태:** build/lint 통과. App 미연결. 브라우저 확인 대기.
 
+
+---
+
+## [detail-panel-ui] 상세 슬라이드 아웃
+
+### 프롬프트 1 (메인 → 서브 에이전트 detail-panel-ui)
+
+<details>
+<summary>서브 에이전트 작업 지시 요약</summary>
+
+- `feat(detail-panel-ui)`: Sheet 420px, summary 헤더 즉시 표시, detail 로딩/에러 분리
+- StageMoveMenu는 푸터 슬롯만
+
+</details>
+
+### AI 출력 요지
+
+- `CandidateDetailPanel.tsx`, sheet `overlayClassName`로 스크림 0.38
+- 에러 시 인라인 박스 + 다시 시도, 헤더·푸터 유지
+
+### 리뷰 / 검증
+
+- **상태:** build/lint 통과. App 미연결. 브라우저 확인 대기.
+
