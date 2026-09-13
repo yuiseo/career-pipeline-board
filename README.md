@@ -5,12 +5,21 @@
 ## 설치 · 실행
 
 ```bash
-# 기술 스택 환경설정 후 작성
+pnpm install       # 의존성 설치
+pnpm dev           # 개발 서버 실행
+pnpm build         # 프로덕션 빌드 (타입 체크 포함)
+pnpm test          # 테스트 실행 (Vitest)
+pnpm lint          # 린트 검사 (ESLint)
 ```
 
 ## 기술 스택
 
-<!-- 기술 스택 환경설정 후 작성 -->
+- **Vite + React + TypeScript** (strict 모드)
+- **ESLint** (flat config, typescript-eslint) **+ Prettier**
+- **Vitest + React Testing Library** — 단위/컴포넌트 테스트
+- **Tailwind CSS v4 + shadcn/ui** — 스타일링 및 UI 컴포넌트
+- **TanStack Query** — 서버 상태 관리
+- 패키지 매니저: **pnpm**
 
 ## mock API 방식
 
