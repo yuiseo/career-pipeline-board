@@ -1268,3 +1268,36 @@ docs/PLAN.md:65-70 UI를 DESIGN.md 참고해 작성하고 CONTRIBUTING에 따라
 
 - **상태:** build/lint 통과. App 미연결. 브라우저 확인 대기.
 
+---
+
+## [react-grab] 개발 모드 UI 요소 디버깅
+
+### 프롬프트 1
+
+```
+react-grab좀 반영해줄래?
+```
+
+### AI 출력 요지
+
+- `react-grab` 0.2.0을 devDependency로 추가
+- Vite 공식 `index.html` 스크립트는 pnpm + html-proxy에서 패키지를 해석하지 못해, `main.tsx`에서 `import.meta.env.DEV`일 때만 동적 import
+- Cursor agent/MCP는 추가 패키지라 이번 범위에서 제외
+- 개발 서버에서 Copy element 툴바·보드 렌더를 확인하고, 프로덕션 번들에 react-grab이 없음을 확인
+
+### 프롬프트 2
+
+```
+react-grab 반영 후 PROMPTS.md, DECISIONS.md에 UI 요소 디버깅을 쉽게 하기 위해 반영했다고 작성해줘. 그리고 이것만 commit을 별도로 CONTRIBUTING.md 에 따라서 작성을 부탁해.
+```
+
+### AI 출력 요지
+
+- DECISIONS.md에 도입 목적(UI 요소 디버깅)과 개발 전용 로드 방식을 기록
+- api-client 작업과 섞이지 않게 react-grab 관련 파일만 분리 커밋
+
+### 리뷰 / 검증
+
+- **판단:** UI 요소 디버깅을 쉽게 하기 위해 개발 전용으로 반영함.
+- **확인한 내용:** 개발 서버에서 보드가 뜨고 Copy element 툴바가 보이며 `window.__REACT_GRAB__`이 존재함. 프로덕션 빌드 산출물에는 react-grab이 없음.
+
