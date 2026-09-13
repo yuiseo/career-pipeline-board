@@ -31,6 +31,8 @@ pnpm lint          # 린트 검사 (ESLint)
 
 ## 문서
 
+- [docs/FUNCTIONAL_SPEC.md](./docs/FUNCTIONAL_SPEC.md) — Must 우선 기능 명세와 인수 조건
+- [docs/PLAN.md](./docs/PLAN.md) — 구현 계획
 - [PROMPTS.md](./PROMPTS.md) — 기능별 프롬프트 & 리뷰 로그
 - [DECISIONS.md](./DECISIONS.md) — 설계 결정 기록
 - [CONTRIBUTING.md](./CONTRIBUTING.md) — 커밋 메시지 규칙

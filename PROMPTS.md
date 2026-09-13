@@ -519,3 +519,112 @@ url 동기화의 경우 처음부터 구현함.
 - **직무 필터 적용 시점:** 이름 검색과 달리 체크하는 즉시 적용하기로 결정함.
 - **직무 미선택:** 전체 직무로 보기로 확인함.
 - **조건 조합:** AI 제안(이름 AND 직무, 선택한 직무끼리 OR)을 그대로 채택함.
+
+## [plan] 구현 계획
+
+### 프롬프트 1
+
+```
+1. Mock API 및 데이터 모델
+   - 지원자 목록/상세 타입 정의
+   - GET /candidates
+   - GET /candidates/:id
+   - PATCH /candidates/:id/stage
+   - localStorage persistence
+   - 200~800ms 지연 / 약 15% 실패
+2. 기본 UI
+   - 페이지 레이아웃
+   - 보드/컬럼
+   - 지원자 카드
+   - 단계 이동 UI
+   - 상세 slide-out
+   - 검색창 / 직무 필터
+   - toast
+   - loading / error / empty 상태
+3. 조회 및 필터링
+   - TanStack Query 목록 조회
+   - 상세 조회
+   - 이름 검색
+   - 직무 필터
+   - stage별 컬럼 분류
+4. 단계 변경
+   - optimistic update
+   - 목록/상세 캐시 동기화
+   - 실패 시 rollback
+   - 성공/실패 사용자 피드백
+5. Must 테스트
+   - 단계 변경 성공
+   - 단계 변경 실패 및 rollback
+   - 검색/필터
+   - loading / error / empty 중 핵심 시나리오
+그리고 Should는 별도 섹션으로:
+- 경쟁 상태 처리
+- 1,000건 가상 스크롤
+- Undo
+- 추가 테스트
+- 키보드 접근성 강화
+
+docs로 생성하거나 README.md에 반영할 것.
+디자인의 경우 CLAUDE의 시안을 통해 만들 예정.
+```
+
+### AI 출력 요지
+
+- 계획을 파일로 쓰기 전에 DECISIONS.md와의 차이 정리
+  - 계획에서 빠진 확정 사항: 시드 1,000건·시연 제어·저장소 버전 키, URL 동기화, 조회 1회 재시도, Must에서는 `inFlightTarget`만 사용
+- 확인 질문 4가지: API 경로 접두사, 단계와 커밋 대응, 테스트 작성 시점, 디자인 시안 반영 시점
+- 계획 위치는 README를 짧게 유지하기 위해 `docs/PLAN.md` 제안
+
+### 프롬프트 2 (확인 질문 응답)
+
+```
+테스트 작성 시점: 각 기능을 커밋하고 test 커밋은 따로 만드는게 좋을거 같음. 5단계에는 어떤 테스트가 있어야 하는지 체크리스트로 남기고  부족한 통합 시나리오도 마지막에 보강.
+test 커밋 시점: Must 기능을 모두 만든 뒤 몰아서
+API 경로: /api/candidates
+커밋 단위: 단계 안에서 기능별로 쪼갬
+디자인 시점: 2단계 UI 전에 시안 먼저
+```
+
+### AI 출력 요지
+
+- `docs/PLAN.md` 작성: 단계별 커밋 목록·완료 조건, API 규약, 5단계 테스트 체크리스트, Should 섹션, 마무리 커밋
+- DECISIONS.md 반영: API 경로 `/api/candidates` 및 명칭 변경, 상세 타입을 Mock API 단계에서 정의하도록 가정 수정, 2-7 커밋·테스트 진행 방식 추가
+- README 문서 목록에 PLAN.md 링크 추가
+- 계획에 새로 넣은 AI 제안 (확인 대기)
+  - 폴더 구조
+  - 1단계를 `feat(candidate-model)`과 `feat(mock-api)` 두 커밋으로 분리
+  - 4단계를 `feat(stage-move)`(비낙관)와 `feat(optimistic-update)`로 분리
+  - Must 단계에서 요청 중인 카드의 이동 메뉴를 비활성화해 지원자별 동시 요청 1개를 보장
+
+### 리뷰 / 검증
+
+- **테스트:** AI가 추천한 TDD(기능 커밋에 테스트 포함)를 기각. 기능 커밋과 test 커밋을 분리하고, Must 기능을 모두 만든 뒤 몰아서 작성함. 5단계에는 필요한 테스트를 체크리스트로 남기고 부족한 통합 시나리오를 마지막에 보강함.
+- **API 경로:** `/api/candidates` 접두사 방식 채택.
+- **커밋 단위:** 계획의 단계 안에서 기능별로 커밋을 나눔.
+- **디자인:** 2단계 UI 구현 전에 Claude 시안을 먼저 만듦.
+- **계획 문서 검토:** `docs/PLAN.md` 전체를 검토해 예외 사항이 없음을 확인함.
+- **AI 추가 제안 4가지:** 폴더 구조, 1단계 커밋 분리(`candidate-model` / `mock-api`), 4단계 커밋 분리(`stage-move` / `optimistic-update`), Must 단계에서 요청 중인 카드의 이동 메뉴 비활성화를 모두 계획으로 확정함.
+
+---
+
+## [feature-spec] 기능 명세 문서화
+
+### 프롬프트 1
+
+```
+당신은/Users/iseoyu/Desktop/career-pipeline-board/TEST_GUIDE.md 의 MUST 요구사항을 최우선으로 생각한다.
+ /Users/iseoyu/Desktop/career-pipeline-board/PROMPTS.md /Users/iseoyu/Desktop/career-pipeline-board/CONTRIBUTING.md /Users/iseoyu/Desktop/career-pipeline-board/DECISIONS.md 를 참고하여 해당 프로젝트의 기능 명세를 문서로 작성한다.
+```
+
+### AI 출력 요지
+
+- `docs/FUNCTIONAL_SPEC.md`에 제품 목적, 데이터 모델, Must 기능 6종, mock API 계약, 상태 전이, Should 확장 범위와 완료 체크리스트를 작성
+- 각 Must 기능에 관찰 가능한 동작과 인수 조건을 함께 정의
+- README 문서 목록에 기능 명세 링크 추가
+
+### 리뷰 / 검증
+
+- **우선순위 검증:** `TEST_GUIDE.md`의 Must 6개 항목과 기술 제약을 각각 FR-01~FR-06 및 mock API 명세에 대응시켜 누락 여부를 확인함.
+- **문서 간 충돌 검증:** `DECISIONS.md`는 `pendingTarget` 기반 연속 이동을 설계했지만, `docs/PLAN.md`는 이를 Should로 분리함. 과제 원문의 우선순위를 따라 Must에서는 요청 중 이동 비활성화, Should에서는 최신 의도 직렬화로 구분함.
+- **정합성 검증:** API 리소스명은 최신 결정과 계획에 맞춰 `applicants`가 아닌 `candidates`로 통일하고, 목록·상세·단계 변경 경로와 응답 책임을 분리함.
+- **판단:** 기능 명세는 구현 방법만 나열하지 않고 기능별 인수 조건과 최종 Must 완료 체크리스트로 검증 가능하게 작성함. 사용자 최종 리뷰 전 상태임.
