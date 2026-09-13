@@ -1220,3 +1220,27 @@ docs/PLAN.md:65-70 UI를 DESIGN.md 참고해 작성하고 CONTRIBUTING에 따라
 
 - **상태:** build/lint 통과. URL sync 없음(의도). 브라우저 확인 대기.
 
+
+---
+
+## [toast] 토스트 알림
+
+### 프롬프트 1 (메인 → 서브 에이전트 toast)
+
+<details>
+<summary>서브 에이전트 작업 지시 요약</summary>
+
+- sonner 없이 커스텀 presentational toast (success/error+다시 시도)
+- App 미연결
+
+</details>
+
+### AI 출력 요지
+
+- `AppToast`·`Toaster`·`ToastItem` 타입, 우하단 스택
+- 자동 dismiss 없음(호출측 책임)
+
+### 리뷰 / 검증
+
+- **상태:** build/lint 통과. 위치 가정은 DECISIONS 기록. 브라우저 확인 대기.
+
