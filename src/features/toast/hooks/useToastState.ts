@@ -35,7 +35,7 @@ export function useToastState() {
       const item: ToastItem = { ...input, id }
       setToasts((previous) => [...previous, item])
 
-      if (input.variant === "success") {
+      if (input.variant === "success" || input.variant === "undoComplete") {
         const timer = setTimeout(() => {
           dismissToast(id)
         }, TOAST_AUTO_DISMISS_MS)

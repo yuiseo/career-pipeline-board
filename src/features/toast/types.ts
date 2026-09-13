@@ -1,8 +1,8 @@
 /**
  * Must: `success` | `error`
- * Should(Undo) 확장 여지: `undoComplete` 및 success 액션("실행 취소")
+ * Should(Undo): `undoComplete` · success 액션("실행 취소") — DECISIONS 2-8
  */
-export type ToastVariant = "success" | "error"
+export type ToastVariant = "success" | "error" | "undoComplete"
 
 export type ToastItem = {
   id: string

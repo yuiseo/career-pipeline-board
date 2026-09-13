@@ -11,6 +11,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet"
 import StageBadge from "@/features/board/components/StageBadge"
+import { TOASTER_ATTR } from "@/features/toast/components/Toaster"
 import { cn } from "@/lib/utils"
 import {
   POSITION_LABEL,
@@ -18,6 +19,12 @@ import {
   type CandidateSummary,
   type Stage,
 } from "@/types/candidate"
+
+function isToasterEventTarget(target: EventTarget | null): boolean {
+  return (
+    target instanceof Element && target.closest(`[${TOASTER_ATTR}]`) != null
+  )
+}
 
 /** DESIGN.md §4-3 — 상세 패널 너비 420px (= Tailwind spacing 105 × 0.25rem) */
 const DETAIL_PANEL_WIDTH_CLASS = "w-105 sm:max-w-105"
@@ -87,6 +94,22 @@ function CandidateDetailPanel({
         side="right"
         overlayClassName="bg-[oklch(0_0_0/0.38)]"
         className={cn("gap-0 p-0", DETAIL_PANEL_WIDTH_CLASS)}
+        onPointerDownOutside={(event) => {
+          // 하단 중앙 토스트(실행 취소·다시 시도) 클릭이 패널 바깥 클릭으로 닫히지 않게 한다.
+          if (isToasterEventTarget(event.target)) {
+            event.preventDefault()
+          }
+        }}
+        onInteractOutside={(event) => {
+          if (isToasterEventTarget(event.target)) {
+            event.preventDefault()
+          }
+        }}
+        onFocusOutside={(event) => {
+          if (isToasterEventTarget(event.target)) {
+            event.preventDefault()
+          }
+        }}
       >
         {summary ? (
           <>

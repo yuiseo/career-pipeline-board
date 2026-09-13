@@ -1,4 +1,4 @@
-import { CheckCircle2, XCircle } from "lucide-react"
+import { CheckCircle2, Circle, XCircle } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
@@ -26,11 +26,12 @@ function AppToast({
     actionLabel ??
     (variant === "error" ? DEFAULT_ERROR_ACTION_LABEL : undefined)
   const showAction = onAction != null && resolvedActionLabel != null
+  const isAlert = variant === "error"
 
   return (
     <div
-      role={variant === "error" ? "alert" : "status"}
-      aria-live={variant === "error" ? "assertive" : "polite"}
+      role={isAlert ? "alert" : "status"}
+      aria-live={isAlert ? "assertive" : "polite"}
       className={cn(
         "flex w-80 max-w-[calc(100vw-2rem)] items-center gap-3 rounded-lg border border-border bg-background px-3 py-2.5 shadow-md",
         className
@@ -40,6 +41,11 @@ function AppToast({
         <CheckCircle2
           aria-hidden="true"
           className="size-5 shrink-0 text-stage-hired-dot"
+        />
+      ) : variant === "undoComplete" ? (
+        <Circle
+          aria-hidden="true"
+          className="size-5 shrink-0 text-muted-foreground"
         />
       ) : (
         <XCircle
