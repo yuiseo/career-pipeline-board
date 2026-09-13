@@ -1516,3 +1516,140 @@ README.md 의 경우도 따로 커밋할 것
 - **판단:** 커밋 메시지를 확인한 뒤 채택함.
 - **결과:** 채택 후 커밋.
 
+---
+
+## [mock-api] Must 테스트
+
+### 프롬프트 1
+
+```
+현재 테스트 계획을 바탕으로 테스트를 서브에이전트로 각각 구현 후 각각의 테스트를 기능별로 커밋 요청
+```
+
+(시나리오: docs/test-scenarios/mock-api.md — M1~M5. 구현이 아니라 HTTP/저장소 계약.)
+
+### AI 출력 요지
+
+- MSW Node `setupServer` + 메모리 저장소 주입, `failRate: 0`/`delay: 0`, 실패만 `failRate: 1`
+- 공유 헬퍼 `src/test/{memoryStorage,fixtures,mswServer}.ts`
+- `handlers.test.ts` M1~M4, `db.test.ts` M5(버전 없음/불일치 시 이전 id 미사용)
+- M5는 프로덕션 시드 재생성(약 1,000건)을 그대로 두고 길이 단언은 하지 않음
+
+### 리뷰 / 검증
+
+- **판단:** `pnpm test src/mocks/handlers.test.ts src/mocks/db.test.ts` 6건 통과. 프로덕션 코드는 수정하지 않음.
+- **결과:** 채택 후 커밋.
+
+
+---
+
+## [mock-api] Must 테스트
+
+### 프롬프트 1
+
+```
+현재 테스트 계획을 바탕으로 테스트를 서브에이전트로 각각 구현 후 각각의 테스트를 기능별로 커밋 요청
+```
+
+(시나리오: docs/test-scenarios/mock-api.md — M1~M5. 구현이 아니라 HTTP/저장소 계약.)
+
+### AI 출력 요지
+
+- MSW Node `setupServer` + 메모리 저장소 주입, `failRate: 0`/`delay: 0`, 실패만 `failRate: 1`
+- 공유 헬퍼 `src/test/{memoryStorage,fixtures,mswServer}.ts`
+- `handlers.test.ts` M1~M4, `db.test.ts` M5(버전 없음/불일치 시 이전 id 미사용)
+- M5는 프로덕션 시드 재생성(약 1,000건)을 그대로 두고 길이 단언은 하지 않음
+
+### 리뷰 / 검증
+
+- **판단:** `pnpm test src/mocks/handlers.test.ts src/mocks/db.test.ts` 통과. 프로덕션 코드는 수정하지 않음.
+- **결과:** 채택 후 커밋.
+
+---
+
+## [race-condition] 연속 이동 · pendingTarget
+
+### 프롬프트 1 (메인 → 서브 에이전트 race-condition)
+
+<details>
+<summary>서브 에이전트 작업 지시 요약</summary>
+
+- `pendingTarget` 추가, 지원자별 요청 직렬화 (DECISIONS 2-3)
+- 요청 중에도 이동 메뉴 활성, 연속 선택은 pending 덮어쓰기
+- 표시 단계: pending → inFlight → confirmed
+
+</details>
+
+### AI 출력 요지
+
+- `useStageMoveController`로 큐·전송 오케스트레이션
+- `enqueueIntent` / `promotePendingOrClear`로 직렬화
+
+### 리뷰 / 검증
+
+- **판단:** 연속 이동·pendingTarget 직렬화 구현을 채택함.
+- **결과:** 채택 후 커밋.
+
+---
+
+## [undo] 단계 이동 실행 취소
+
+### 프롬프트 1 (메인 → 서브 에이전트 undo)
+
+<details>
+<summary>서브 에이전트 작업 지시 요약</summary>
+
+- 성공 토스트 「실행 취소」: 직전 단계로 되돌리기 (DECISIONS 2-8)
+- Undo도 같은 `requestStageMove` 흐름으로 처리
+- Undo 성공 시 `undoComplete` 토스트 「이동을 취소했습니다」
+
+</details>
+
+### AI 출력 요지
+
+- 최근 성공 이동을 ref로 보관 후 Undo 시 `fromStage`로 재요청
+- 토스트를 하단 중앙 + `document.body` 포털로 두어 상세 Sheet와 겹치지 않게 함
+
+### 프롬프트 2 (버그 보고)
+
+```
+현재 다음 로직에 대해 오류 발견
+1. 임의의 상세 슬라이드 접근
+2. 상태 변경
+3. undo 실행
+
+기대 결과
+- 슬라이드 아웃이 열린 상태에서 이전 상태로 변경
+
+현재 상황
+- 슬라이드 아웃이 닫히면서 table에서는 이전 상태로 이동은 되나 "이동 중"이 계속 뜨며 완료되지 않음
+```
+
+### AI 출력 요지 (수정 시도)
+
+- 원인 가설: 토스트가 Sheet 밖(body 포털)이라 「실행 취소」클릭이 바깥 상호작용으로 처리되어 패널이 닫히고, `inFlight` 정리가 꼬일 수 있음
+- 완화: Sheet `onPointerDownOutside` / `onInteractOutside` / `onFocusOutside`에서 토스트 영역(`data-toaster`)은 `preventDefault`
+- 보강: `mutateAsync` 성공/실패 직후·토스트 전에 `promotePendingOrClear` / `clearMoveState`
+
+### 필수 검증 (브라우저 · 후속 수정 시 재확인)
+
+`?mockFail=0` 권장.
+
+1. 임의 카드 클릭 → 상세 슬라이드 아웃 유지
+2. 단계 변경 → 성공 토스트 「실행 취소」
+3. 「실행 취소」 클릭 후 아래를 모두 만족해야 함
+   - [ ] 상세 슬라이드 아웃이 닫히지 않고 열린 채 유지
+   - [ ] 보드에서 해당 카드가 직전 단계로 복귀
+   - [ ] 카드·패널의 「이동 중」이 사라지고 이동 완료
+   - [ ] Undo 완료 토스트(「이동을 취소했습니다」) 표시
+
+### 알려진 미해결: Undo 후 「이동 중」미해제
+
+- **재현:** 상세 슬라이드 아웃 열기 → 단계 변경 → 토스트 「실행 취소」
+- **관찰:** 보드에서는 직전 단계로 돌아가지만, 카드·패널에 **「이동 중」이 계속 표시**되며 완료되지 않음. (패널이 닫히는 증상도 함께 보고됨)
+- **상태:** **미해결.** 위 완화는 이 커밋에 포함하되, 「이동 중」고착 해제는 후속 `fix`로 다룬다. (DECISIONS §4)
+
+### 리뷰 / 검증
+
+- **판단:** Undo·토스트 위치·Sheet 바깥 클릭 완화는 채택해 커밋함. 「이동 중」미해제는 위 항목·DECISIONS §4로 남기고 후속 수정한다.
+- **결과:** 채택 후 커밋 (미해결 버그 기록 포함).
