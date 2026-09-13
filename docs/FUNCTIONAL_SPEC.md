@@ -230,7 +230,7 @@ Must 기능을 먼저 완성한다. Should 기능은 Must의 동작과 데이터
 | `PATCH /api/candidates/:id/stage` | `{ "stage": Stage }` | 변경된 `CandidateDetail` |
 
 - 실패 응답은 HTTP 500과 `{ "message": string }` 형식을 사용한다.
-- **(확정 필요)** 존재하지 않는 지원자 ID, 허용되지 않은 `stage` 값 같은 유효하지 않은 요청을 4xx로 구분할지와 상태 코드는 DECISIONS에 결정이 없다. `feat(mock-api)` 구현 전에 확정한다.
+- 존재하지 않는 지원자 ID는 `404`, 허용되지 않은 `stage` 값 등 잘못된 요청 본문은 `400`으로 응답한다. 응답 형식은 `{ "message": string }`로 같다. (DECISIONS 2-2)
 
 ### 5.2 지연·실패·저장
 
