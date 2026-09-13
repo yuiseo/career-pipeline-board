@@ -1244,3 +1244,27 @@ docs/PLAN.md:65-70 UI를 DESIGN.md 참고해 작성하고 CONTRIBUTING에 따라
 
 - **상태:** build/lint 통과. 위치 가정은 DECISIONS 기록. 브라우저 확인 대기.
 
+
+---
+
+## [status-views] 로딩·에러·빈 상태
+
+### 프롬프트 1 (메인 → 서브 에이전트 status-views)
+
+<details>
+<summary>서브 에이전트 작업 지시 요약</summary>
+
+- BoardLoadingSkeleton(5컬럼), BoardErrorView, BoardEmptyView(all|filtered)
+- 컬럼 0건은 기존 BoardColumn 담당
+
+</details>
+
+### AI 출력 요지
+
+- 필터 빈 상태: SPEC 문구 + DESIGN「검색·필터 초기화」버튼
+- 스켈레톤 카드 자리 3개(가정)
+
+### 리뷰 / 검증
+
+- **상태:** build/lint 통과. App 미연결. 브라우저 확인 대기.
+
