@@ -31,6 +31,7 @@ pnpm lint          # 린트 검사 (ESLint)
 
 ## 문서
 
+- [AGENTS.md](./AGENTS.md) — AI 에이전트 공통 작업 규칙
 - [docs/FUNCTIONAL_SPEC.md](./docs/FUNCTIONAL_SPEC.md) — Must 우선 기능 명세와 인수 조건
 - [docs/FUNCTIONAL_SPEC.md](./docs/FUNCTIONAL_SPEC.md) — 기능 명세 · 인수 조건
 - [docs/PLAN.md](./docs/PLAN.md) — 구현 계획

@@ -754,3 +754,71 @@ PROMPTS.md에 어떤 파일을 참고하여 design.md를 생성했는지 간단�
 
 - 캔버스에서 실제 사용한 오클치 값과 `DECISIONS.md`의 결정 번호가 서로 어긋나지 않는지 항목별로 대조함
 - 컬럼 `border-radius`를 시안에서 12px로 그렸는데 프로젝트 기존 `--radius`는 10px임을 발견 → 새 토큰으로 얼버무리지 않고 "구현 시 기존 값(10px)으로 통일" 메모를 `DESIGN.md` 7장에 남김
+
+---
+
+## [agents] AI 에이전트 공통 규칙
+
+### 프롬프트 1
+
+```
+AGENTS.md를 만드려고 한다. 현재 handler.ts처럼 매직 넘버를 사용하거나 리소스의 경우 하드코딩 되는데 이런 것을 방지하고 싶다. 또한 다음과 같은 형식을 따른다.
+
+AGENTS.md
+Cursor / Claude Code / Codex 공통 규칙 원본. 도구별 설정 파일은 이 문서를 참조/임포트한다.
+판단
+근거 없으면 임의 구현 금지. docs/spec.md에 가정 또는 질문 기록 후 진행.
+가정은 "기본값 처리 가능" / "방향 확인 필요"로 구분.
+코드 스타일
+폴더는 도메인 단위 (features/xxx/components, features/xxx/hooks)
+컴포넌트 PascalCase, 그 외 kebab-case
+타입
+any 금지
+API 응답: Zod 스키마 정의 → z.infer로 타입 추론
+외부 입력은 스키마 검증 후 사용
+작업 범위
+사전 협의 없는 패키지 설치 금지
+기존 구조/컨벤션 유지
+테스트는 구현과 별도 커밋(test:)
+커밋 전 확인 절차: CONTRIBUTING.md
+```
+
+### AI 출력 요지
+
+- 규칙과 현재 코드·문서가 어긋나는 곳 정리: `docs/spec.md` 없음, `setupTests.ts`·shadcn `button.tsx` 파일명, zod 미설치와 `db.ts`의 검증 없는 형변환, `handlers.ts`의 HTTP 상태 코드·문구·API 경로·URL 파라미터 하드코딩
+- 작업 순서 제안: `docs(agents)` 커밋 → 모델을 Zod로 `refactor` → 미커밋 mock-api를 규칙에 맞춰 수정 후 커밋
+- 확인 질문 4가지: spec 경로, Zod 설치·적용 범위, 파일명 규칙 예외, 상수화 범위
+
+### 프롬프트 2 (확인 질문 응답)
+
+```
+spec 경로: 가정 질문을 기록하는 파일은 이미 DECISIONS.md에서 기록하기로 결정되어 있음.
+Zod: 승인, 외부 입력 전체
+파일명 규칙: 그냥 해당 파일명 규칙은 사용하지 않음.
+상수화 범위: 값·키는 상수, UI 문구는 컴포넌트에
+```
+
+### 프롬프트 3
+
+```
+또한 구현 단계가 완료되면 커밋 시 plan과 functional_spec 문서에 체크
+```
+
+### AI 출력 요지
+
+- `AGENTS.md` 작성: 주어진 형식을 따르되 가정·질문 기록 위치를 `DECISIONS.md`로, 파일명 규칙 제외, 하드코딩 금지 범위(숫자·HTTP 상태·API 경로·쿼리 키·URL 파라미터·저장소 키는 상수, UI 문구는 컴포넌트)와 외부 입력 범위(API 응답·요청 본문·localStorage·URL 쿼리) 명시
+- `CLAUDE.md`: `@AGENTS.md` 임포트만 둠 (Codex·Cursor는 루트 AGENTS.md를 직접 읽음)
+- `CONTRIBUTING.md`에 "커밋 전 확인 절차" 6단계 추가 (검사 명령, AGENTS 규칙, 커밋 파일 확인, PROMPTS 리뷰, PLAN·FUNCTIONAL_SPEC 체크, DECISIONS 반영)
+- `docs/PLAN.md` 커밋 표에 `완료` 체크 칸 추가, 커밋한 `feat(candidate-model)` 체크
+- `DECISIONS.md` 1장에 가정 표시 규칙 `(기본값 처리 가능)` / `(방향 확인 필요)` 추가, README 문서 목록에 AGENTS.md 링크
+- 진행 중이던 mock-api 변경은 섞이지 않도록 stash 후 작업
+
+### 리뷰 / 검증
+
+- **spec 경로 수정:** 가정·질문 기록은 이미 DECISIONS.md에서 하기로 결정되어 있으므로 `docs/spec.md`를 만들지 않음.
+- **Zod:** 설치를 승인하고, 외부 입력 전체(API 응답, mock 요청 본문, localStorage, URL 쿼리)에 스키마 검증을 적용함.
+- **파일명 규칙:** AI가 제시한 예외 처리 대신, 해당 파일명 규칙 자체를 사용하지 않기로 함.
+- **상수화 범위:** 값·키는 상수로 정의하고 UI 문구는 컴포넌트에 둠.
+- **체크 규칙 추가:** 구현 단계를 완료해 커밋할 때 PLAN과 FUNCTIONAL_SPEC 문서에 체크하도록 함.
+- **폴더 규칙 충돌:** AI가 AGENTS.md의 도메인 단위 폴더 규칙과 PLAN·기존 코드의 공통 계층(`types/`, `mocks/`, `api/`)이 어긋남을 지적함. 공통 계층은 `src/` 바로 아래에 두는 예외(a안)를 AGENTS.md에 추가하기로 함.
+- **초안 검토:** 위 예외를 추가한 뒤 AGENTS.md와 관련 문서 변경을 채택함.

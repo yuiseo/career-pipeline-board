@@ -40,3 +40,12 @@ feat(stage-move): 카드 단계 이동 + mock API 저장
 - 드래그 대신 액션 버튼 방식 선택
 - AI 초안은 로컬 상태만 갱신 → API persist 누락, 직접 보완
 ```
+
+## 커밋 전 확인 절차
+
+1. `pnpm build`, `pnpm lint`, `pnpm format:check`가 통과한다. 테스트가 있으면 `pnpm test`도 통과한다.
+2. [AGENTS.md](./AGENTS.md) 규칙(매직 넘버·하드코딩, `any`, Zod 검증, 패키지 설치 협의)을 위반하지 않는다.
+3. `git status`로 커밋에 의도하지 않은 파일(다른 기능의 변경, 생성 파일, 비밀값)이 섞이지 않았는지 확인한다.
+4. PROMPTS.md에 같은 scope 섹션이 있고, 리뷰 / 검증 칸이 사용자 판단으로 채워져 있다.
+5. 구현 단계를 완료했다면 [docs/PLAN.md](./docs/PLAN.md)의 해당 커밋과 [docs/FUNCTIONAL_SPEC.md](./docs/FUNCTIONAL_SPEC.md)의 충족한 인수 조건에 체크(`[x]`)한다.
+6. 가정이나 설계 변경이 생겼다면 DECISIONS.md에 반영한다.
