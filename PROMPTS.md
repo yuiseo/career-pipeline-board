@@ -681,3 +681,53 @@ API 경로: /api/candidates
 ### 리뷰 / 검증
 
 - **4xx 응답:** 명세에서 확정 필요로 남긴 항목을 결정함. 존재하지 않는 지원자 ID는 `404`, 잘못된 요청 본문(허용되지 않은 `stage` 값 등)은 `400`으로 구분함. DECISIONS 2-2와 FUNCTIONAL_SPEC 5.1에 반영.
+
+---
+
+## [candidate-model] 지원자 타입 · 시드 · 저장소
+
+### 프롬프트 1
+
+```
+4xx는 404/400으로 구분하고 candidate-model 시작
+```
+
+### AI 출력 요지
+
+- 구현 전에 식별자와 시드 방식 확인 질문 4가지 제시
+
+### 프롬프트 2 (확인 질문 응답)
+
+```
+Stage 식별자: 영문 식별자 (document | interview | offer | hired | rejected, 화면은 한글 라벨)
+직무 목록: 6개 (frontend / backend / mobile / design / pm / data)
+시드 방식: 직접 구현 생성기 (시드 기반 의사난수, 의존성 없음, 고정 기준일)
+단계 분포: 실제 퍼널처럼 가중치 (서류검토 40 / 면접 25 / 처우협의 10 / 최종합격 5 / 불합격 20)
+```
+
+### AI 출력 요지
+
+- `src/types/candidate.ts`: `STAGES`·`Stage`·`STAGE_LABEL`, `POSITIONS`·`Position`·`POSITION_LABEL`, `CandidateSummary`, `CandidateDetail`
+- `src/mocks/seed.ts`: mulberry32 의사난수, 가중치 선택, `createSeedCandidates(count = 1000, seed)`. 지원일은 `Date.now()`가 아니라 고정 기준일(2026-09-01)에서 180일 이내
+- `src/mocks/db.ts`: `createCandidateDb(storage)` — `getAll` / `getById` / `updateStage` / `reset(count)`. 버전 키(`STORAGE_VERSION = 1`)가 없거나 다르거나 JSON이 깨졌으면 시드 재생성. 저장소는 주입받아 테스트에서 메모리 저장소로 바꿀 수 있음
+
+### 메인 에이전트 검증
+
+- `pnpm build` / `lint` / `format:check` 통과. 아직 import하는 곳이 없어 동작은 커밋하지 않는 임시 스크립트로 확인하고 삭제함 (테스트 커밋은 DECISIONS 2-7에 따라 5단계에서 작성)
+
+| 확인 항목 | 결과 |
+|---|---|
+| 건수 · id 중복 | 1,000건, id 1,000개 모두 고유 |
+| 결정성 | 두 번 생성한 결과가 완전히 같음 |
+| 단계 분포 | 서류검토 421 / 면접 237 / 처우협의 95 / 최종합격 51 / 불합격 196 (가중치 40/25/10/5/20과 근접) |
+| 직무 분포 | 155~180건으로 고르게 분포 |
+| 지원일 범위 | 2026-03-06 ~ 2026-09-01 |
+| 저장 크기 | 약 19만 자 (localStorage 한도 약 500만 자 대비 여유) |
+| 새로고침 후 유지 | 단계 변경 후 새 db 인스턴스로 읽어도 변경값 유지 |
+| 없는 id 변경 | `undefined` 반환 (mock-api에서 404로 연결 예정) |
+| 버전 불일치 · 깨진 JSON | 둘 다 시드 1,000건으로 재생성 |
+| `reset(0)` | 빈 데이터가 저장되고 다시 읽어도 0건 유지 (`?mockSeed=0` 시연용) |
+
+### 리뷰 / 검증
+
+- **판단:** 구현 결과와 메인 에이전트 검증표를 확인하고 **수정 없이 그대로 채택**함.
