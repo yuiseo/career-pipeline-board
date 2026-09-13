@@ -1301,3 +1301,40 @@ react-grab 반영 후 PROMPTS.md, DECISIONS.md에 UI 요소 디버깅을 쉽게 
 - **판단:** UI 요소 디버깅을 쉽게 하기 위해 개발 전용으로 반영함.
 - **확인한 내용:** 개발 서버에서 보드가 뜨고 Copy element 툴바가 보이며 `window.__REACT_GRAB__`이 존재함. 프로덕션 빌드 산출물에는 react-grab이 없음.
 
+
+---
+
+## [api-client] fetch 래퍼 · candidates API · QueryClient
+
+### 프롬프트 1
+
+```
+docs/PLAN.md:72-79 각 컴포넌트에 조회 API를 연동. 서브에이전트를 통해 PLAN 별로 수행 후 커밋 전 나의 확인을 거침.
+tanstack-query를 통해 API 연동.
+```
+
+### 프롬프트 2 (메인 → 서브 에이전트 api-client)
+
+<details>
+<summary>서브 에이전트 작업 지시 요약</summary>
+
+- `feat(api-client)`만. 커밋·UI 훅 금지
+- fetch 래퍼 + ApiError, candidates API 3종, QueryClient(조회 retry 1 / mutation 0)
+- 본문 타입 `ApiErrorBody`와 thrown `ApiError` 클래스 분리
+
+</details>
+
+### AI 출력 요지
+
+- `client.ts` request/get/patch, `candidates.ts` 3종, `queryKeys.ts`, `createQueryClient()`
+- handlers는 `ApiErrorBody`로 import 변경
+- main은 `createQueryClient()` 사용
+
+### 메인 보완
+
+- react-grab 커밋과 main.tsx가 겹치며 `createQueryClient` 연결이 빠졌던 것을 복구
+
+### 리뷰 / 검증
+
+- **상태:** build/lint/format/test 통과. 사용자 확인 후 커밋.
+

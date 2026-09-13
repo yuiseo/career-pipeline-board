@@ -1,6 +1,6 @@
 import { delay, http, HttpResponse } from "msw"
 import { API_ROUTE_PATTERNS, type CandidateRouteParams } from "@/api/endpoints"
-import { HTTP_STATUS, type ApiError } from "@/api/http"
+import { HTTP_STATUS, type ApiErrorBody } from "@/api/http"
 import {
   updateStageRequestSchema,
   type CandidateDetail,
@@ -39,7 +39,7 @@ function toSummary({
 }
 
 function errorResponse(status: number, message: string) {
-  const body: ApiError = { message }
+  const body: ApiErrorBody = { message }
   return HttpResponse.json(body, { status })
 }
 
