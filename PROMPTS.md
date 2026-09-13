@@ -1008,3 +1008,57 @@ DESIGN.md 표기 오류: 수정 후 docs(design) 커밋
 - **이동 방향:** DESIGN.md 시안의 정방향 제약을 기각하고, 모든 단계로 이동 가능한 기존 결정을 유지함.
 - **성공 토스트:** 성공 토스트를 Must에 포함하는 PLAN·FUNCTIONAL_SPEC 결정을 유지함.
 - **표기 오류:** DESIGN.md의 경로·링크 표기 오류를 수정해 확정 결정과 맞춘 뒤 docs(design)로 커밋하도록 함.
+
+---
+
+## [page-layout] 페이지 레이아웃
+
+### 프롬프트 1
+
+```
+서브에이전트에서 /Users/iseoyu/Desktop/career-pipeline-board/DESIGN.md 를 바탕으로 /Users/iseoyu/Desktop/career-pipeline-board/docs/PLAN.md 의 UI 구현을 단계별로 실행하는데 일단 한 단계씩 시행 후 결과를 나에게 알려줘야 함. 한번에 기능 구현 금지.
+```
+
+### 프롬프트 2 (메인 에이전트 → 서브 에이전트 ui-page-layout)
+
+<details>
+<summary>서브 에이전트 작업 지시 요약</summary>
+
+- PLAN 2단계 첫 커밋 `feat(page-layout)` 하나만 구현, 다음 단계 구현·커밋·패키지 설치·문서 수정 금지
+- AGENTS.md, DESIGN.md 2장·3-1·7장, PLAN 해당 행, 기존 `App.tsx`·`App.test.tsx`·`index.css`를 먼저 읽을 것
+- 동시에 작업 중인 mock-api 에이전트의 파일(`src/mocks`, `src/api`, `src/types`, `main.tsx`, package 파일, 문서)은 수정 금지. 그쪽 미완성 코드로 검사가 실패하면 원인 파일을 구분해 보고
+- 범위: Topbar 72px(제목·부제·툴바 슬롯) + 가로 스크롤 보드 영역(padding 22px 32px). 검색·필터·컬럼은 만들지 않고 슬롯만. props로 내용 전달, `src/features/board/components/`에 컴포넌트 1개, `<h1>` 제목 유지로 기존 스모크 테스트 통과, 기존 shadcn 토큰 사용, 시맨틱 랜드마크
+- 보고: 파일 역할, props 인터페이스, DESIGN 치수 매핑표와 판단 근거, 검증 결과, 다음 단계 메모
+
+</details>
+
+### AI 출력 요지 (서브 에이전트 결과)
+
+- `src/features/board/components/BoardPageLayout.tsx`: props `title`, `description?`, `toolbar?`, `children?`. `<header>`(h1·부제·툴바 슬롯) + `<main>`(가로 스크롤 보드 영역). 화면 높이를 채우고 보드 영역만 스크롤되게 `h-svh` + `flex-col`, `<main>`에 `flex-1 min-h-0`
+- `src/App.tsx`: 레이아웃에 제목과 부제("지원자를 전형 단계별로 확인하고 관리합니다.") 전달
+- DESIGN 치수를 4px 단위 Tailwind 기본값으로 매핑(임의값 없음): Topbar `h-18`(72px), 보드 `py-5.5 px-8`(22px/32px), 제목 `text-lg font-semibold`(18px/600), 부제 `text-xs`(12px)
+- 판단: DESIGN에 없는 Topbar 좌우 여백은 보드와 좌측 끝을 맞추려고 `px-8`, 컬럼 간 gap은 값이 없어 넣지 않음, 긴 제목·부제는 `truncate`
+- 다음 단계 메모: 컬럼은 `shrink-0` 고정 너비 필요, 컬럼 간 gap 결정 필요, 컬럼 내부 세로 스크롤은 컬럼이 담당, 좁은 화면에서 툴바 넘침은 search-filter 단계에서 확인
+
+### 메인 에이전트 검증
+
+- 두 파일 정독, build / lint / test / format:check 직접 재실행 → 통과
+- 변경 파일은 `src/App.tsx`, `src/features/`뿐이며 금지 목록 파일을 건드리지 않음을 `git status`로 확인
+- 지적 사항
+  - props 타입을 `interface`로 선언함. 기존 코드(`CandidateDb`, `HandlerOptions`)는 `type`을 사용해 컨벤션이 섞임 → `type`으로 통일 제안
+  - Topbar 좌우 여백 `px-8`은 DESIGN.md에 근거가 없는 값이라 DECISIONS.md에 가정으로 기록이 필요함 (AGENTS.md 판단 규칙)
+
+### 프롬프트 3
+
+```
+컴포넌트 props의 경우에는 기존의 코드(백엔드)와 다르기 때문에 interface로 선언해서 관리하는 것이 맞다.
+백엔드와 프론트엔드를 별개로 구분.
+
+DESIGN.md에 없는 값을 서브에이전트가 정한 부분은 현재 상태를 브라우저로 확인 시 올바른 판단으로 기본값 처리가 맞음
+```
+
+### 리뷰 / 검증
+
+- **props 선언 방식:** AI가 제안한 `type` 통일을 기각함. 컴포넌트 props는 기존 백엔드(mock·데이터) 코드와 성격이 다르므로 `interface`로 선언해 관리하는 것이 맞다고 판단함. 백엔드와 프론트엔드의 타입 선언 방식을 별개로 구분함 (AGENTS.md 코드 스타일에 규칙 추가, 별도 docs 커밋).
+- **DESIGN.md에 없는 값:** 브라우저로 현재 화면을 확인한 결과, 서브 에이전트가 정한 상단 바 좌우 여백 32px는 올바른 판단이며 기본값 처리가 맞다고 확정함. DECISIONS.md 가정에 기록.
+- **결과:** 서브 에이전트 구현을 수정 없이 채택함.
