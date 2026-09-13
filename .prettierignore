@@ -1,9 +1,6 @@
 dist
 pnpm-lock.yaml
 
-README.md
-PROMPTS.md
-DECISIONS.md
-CONTRIBUTING.md
-TEST_GUIDE.md
+# 사람이 쓰는 기록 문서는 자동 포맷하지 않는다
+*.md
 docs/
