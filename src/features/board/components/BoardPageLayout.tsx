@@ -30,7 +30,7 @@ function BoardPageLayout({
           <div className="flex shrink-0 items-center gap-2">{toolbar}</div>
         )}
       </header>
-      <main className="flex min-h-0 flex-1 items-start overflow-x-auto px-8 py-5.5">
+      <main className="flex min-h-0 flex-1 gap-3 overflow-x-auto px-8 py-5.5">
         {children}
       </main>
     </div>

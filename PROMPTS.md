@@ -1062,3 +1062,56 @@ DESIGN.md에 없는 값을 서브에이전트가 정한 부분은 현재 상태�
 - **props 선언 방식:** AI가 제안한 `type` 통일을 기각함. 컴포넌트 props는 기존 백엔드(mock·데이터) 코드와 성격이 다르므로 `interface`로 선언해 관리하는 것이 맞다고 판단함. 백엔드와 프론트엔드의 타입 선언 방식을 별개로 구분함 (AGENTS.md 코드 스타일에 규칙 추가, 별도 docs 커밋).
 - **DESIGN.md에 없는 값:** 브라우저로 현재 화면을 확인한 결과, 서브 에이전트가 정한 상단 바 좌우 여백 32px는 올바른 판단이며 기본값 처리가 맞다고 확정함. DECISIONS.md 가정에 기록.
 - **결과:** 서브 에이전트 구현을 수정 없이 채택함.
+
+---
+
+## [board-column] 보드 컬럼
+
+### 프롬프트 1 (확인 질문 응답)
+
+```
+컬럼 사이 간격: 12px
+컬럼 높이: 컬럼이 화면 높이까지, 내부 세로 스크롤
+빈 컬럼 문구: 이 단계의 지원자가 없습니다
+```
+
+### 프롬프트 2 (메인 에이전트 → 서브 에이전트 ui-board-column)
+
+<details>
+<summary>서브 에이전트 작업 지시 요약</summary>
+
+- PLAN 2단계 `feat(board-column)` 하나만 구현. 카드·메뉴·검색·상태 화면 구현, 커밋, 패키지 설치(`shadcn add` 포함), 문서 수정 금지
+- AGENTS.md(컴포넌트 props는 `interface`), DESIGN.md 1-2·2·3-2·7, DECISIONS 컬럼 가정 3개, 기존 레이아웃·타입 코드를 먼저 읽을 것
+- 사용자 확정 사항: 간격 12px, 컬럼이 보드 높이를 채우고 카드 목록만 세로 스크롤("+ N명 더" 제외), 빈 컬럼 문구, 컬럼 순서·이름은 `STAGES`·`STAGE_LABEL` 사용
+- 범위: DESIGN 1-2 단계 색 토큰을 index.css에 정의(기존 토큰 변경 금지, 단계 → 클래스는 `Record<Stage, ...>` 한 곳에서 매핑, 동적 클래스 조합 금지), 컬럼 컴포넌트(`stage`·`count`·`children`), 보드 배치, App에서 `count={0}`으로 5개 컬럼 렌더(가짜 데이터 금지), 13px 타이포 토큰화 여부 판단
+- 작업 중 다른 작업자의 미커밋 변경(shadcn 컴포넌트 7개, index.css 토큰)이 생겼다가 원복되어, 이를 사용하지 말라는 지시와 정정 지시를 추가로 보냄
+
+</details>
+
+### AI 출력 요지 (서브 에이전트 결과)
+
+- `src/features/board/components/BoardColumn.tsx`: props `stage`, `count`, `children`. `<section aria-labelledby>` + `<h2>`, 헤더(단계 dot·이름·카운트 배지) 고정, 본문 스크롤 영역 안에 `<ul>`(카드는 `<li>`로 전달하는 규칙), 0건이면 `<ul>` 대신 `<p>` 문구
+- `src/index.css`: DESIGN 1-2 단계 토큰 15개와 `@theme inline`의 `--color-stage-*`, 13px 타이포 토큰 `--text-body` 추가
+- `BoardPageLayout.tsx`: `<main>`에서 `items-start`를 빼 컬럼이 보드 높이를 채우게 하고 `gap-3`(12px) 추가. 래퍼를 새로 두지 않은 이유는 `<main>`이 원래 컬럼 목록 컨테이너이기 때문
+- `App.tsx`: `STAGES.map`으로 컬럼 5개를 `count={0}`으로 렌더
+- DESIGN에 값이 없어 정한 부분: 헤더 여백(`px-1.5 py-1 gap-2`), 카운트 배지(흰 배경 + 테두리, `--muted` 배경 위에서 묻히지 않게), 빈 문구 여백(`py-6`)
+- 작업 중 작업 트리 변경 보고: 다른 작업자의 shadcn 컴포넌트·index.css 토큰·DECISIONS.md 수정이 사라져 첫 빌드가 `Cannot find module '@/components/ui/badge'`로 실패 → badge를 쓰지 않고 `<span>`으로 배지 구현, 단계 토큰은 DESIGN 값 그대로 직접 정의
+
+### 메인 에이전트 검증
+
+- 네 파일 diff 정독, 단계 토큰 15개 값을 DESIGN.md 1-2 표와 하나씩 대조해 일치 확인 (불합격 dot은 `var(--destructive)`)
+- build / lint / test / format:check 직접 재실행 → 통과
+- 원복 과정에서 사라진 DECISIONS.md 컬럼 가정 3개를 메인 에이전트가 다시 기록함
+- 브라우저 확인은 하지 못함: 컬럼이 보드 높이를 채우는지, 카드가 많을 때 본문만 스크롤되는지는 카드가 없는 지금 화면에서 높이만 확인 가능 → 사용자 확인 필요
+- DESIGN에 없는 세부 값(헤더 여백, 배지 스타일, 빈 문구 여백)은 page-layout과 같이 브라우저 확인 후 가정으로 기록 필요
+
+### 프롬프트 3
+
+```
+현재 작업 속도가 너무 느려서 이후 다른 UI의 경우 Cursor에서 구현할 것임. 지금까지의 변경사항까지만 너가 일단 수행.
+```
+
+### 리뷰 / 검증
+
+- **판단:** 서브 에이전트로 한 단계씩 진행하는 방식이 작업 속도가 너무 느리다고 판단함. 이번 `board-column`까지의 변경사항만 이 세션에서 마무리하고, 이후 UI 단계(`candidate-card`부터)는 Cursor에서 구현하기로 함 (AGENTS.md 공통 규칙을 그대로 따름).
+- **세부 값:** DESIGN.md에 없어 서브 에이전트가 정한 헤더 여백·카운트 배지 스타일·빈 문구 여백은 사용자 브라우저 확인 전이므로 DECISIONS.md에 `(기본값 처리 가능)` 가정으로 기록함.
