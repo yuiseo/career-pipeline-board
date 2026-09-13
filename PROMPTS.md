@@ -731,3 +731,26 @@ Stage 식별자: 영문 식별자 (document | interview | offer | hired | reject
 ### 리뷰 / 검증
 
 - **판단:** 구현 결과와 메인 에이전트 검증표를 확인하고 **수정 없이 그대로 채택**함.
+
+---
+
+## [design] 디자인 시스템 문서 (DESIGN.md)
+
+### 프롬프트
+
+```
+이제 DESIGN.md를 정리하고 commit을 생성해줘. commit은 CONTRIBUTING.md을 참고하여 작성할 것.
+PROMPTS.md에 어떤 파일을 참고하여 design.md를 생성했는지 간단히 남길 것.
+```
+
+(이 요청 전에 Claude Design 캔버스로 보드 시안을 먼저 그려 검토받았고, DECISIONS.md의 검색·필터·롤백 결정 반영 → Must/Should 범위 태깅까지 거친 뒤 문서화함)
+
+### AI 출력 요지
+
+- `TEST_GUIDE.md`(Must/Should 요구사항), `DECISIONS.md`(2-1~2-6 설계 결정), `package.json`(설치된 Tailwind·shadcn/ui·TanStack Query·Geist 폰트), `src/index.css`(기존 shadcn 뉴트럴 토큰), `src/components/ui/button.tsx`(버튼 variant·size 규칙)를 참고해 `DESIGN.md` 작성
+- 캔버스 시안(보드·상세 패널·로딩·에러·빈 상태 3단계·토스트)의 색상 토큰·타이포·컴포넌트별 상태를 문서로 정리하고, 각 항목에 Must/Should 태그를 붙임
+
+### 리뷰 / 검증
+
+- 캔버스에서 실제 사용한 오클치 값과 `DECISIONS.md`의 결정 번호가 서로 어긋나지 않는지 항목별로 대조함
+- 컬럼 `border-radius`를 시안에서 12px로 그렸는데 프로젝트 기존 `--radius`는 10px임을 발견 → 새 토큰으로 얼버무리지 않고 "구현 시 기존 값(10px)으로 통일" 메모를 `DESIGN.md` 7장에 남김
