@@ -3,10 +3,16 @@ import { POSITIONS, type CandidateDetail, type Stage } from "@/types/candidate"
 export const DEFAULT_SEED_COUNT = 1000
 const DEFAULT_SEED = 20260913
 
-/** 지원일 범위의 기준일. Date.now()를 쓰지 않아 언제 생성해도 같은 데이터가 나온다. */
+/** 지원일 범위의 기준일(2026-09-01, 월은 0부터). Date.now()를 쓰지 않아 언제 생성해도 같은 데이터가 나온다. */
 const BASE_DATE_UTC = Date.UTC(2026, 8, 1)
 const APPLIED_WITHIN_DAYS = 180
 const DAY_MS = 24 * 60 * 60 * 1000
+
+const ID_DIGITS = 4
+const MAX_EXPERIENCE_YEARS = 15
+/** 연락처 010-XXXX-XXXX의 네 자리 구간 범위 */
+const PHONE_SEGMENT_MIN = 1000
+const PHONE_SEGMENT_MAX = 9999
 
 const STAGE_WEIGHTS: [Stage, number][] = [
   ["document", 40],
@@ -31,7 +37,7 @@ const GIVEN_NAME_SYLLABLES = "민서지현준우윤하도연수예은진유태�
 
 type Random = () => number
 
-/** 시드값 기반 의사난수 생성기 (mulberry32). 0 이상 1 미만을 반환한다. */
+/** 시드값 기반 의사난수 생성기 (mulberry32). 0 이상 1 미만을 반환한다. 내부 숫자는 알고리즘 고정 상수다. */
 function createRandom(seed: number): Random {
   let state = seed
   return () => {
@@ -71,7 +77,7 @@ export function createSeedCandidates(
   const random = createRandom(seed)
 
   return Array.from({ length: count }, (_, index) => {
-    const number = String(index + 1).padStart(4, "0")
+    const number = String(index + 1).padStart(ID_DIGITS, "0")
     const name =
       pick(random, SURNAMES) +
       pick(random, GIVEN_NAME_SYLLABLES) +
@@ -85,8 +91,8 @@ export function createSeedCandidates(
       appliedAt: toDateString(BASE_DATE_UTC - daysAgo * DAY_MS),
       stage: pickWeighted(random, STAGE_WEIGHTS),
       email: `candidate${number}@example.com`,
-      phone: `010-${randomInt(random, 1000, 9999)}-${randomInt(random, 1000, 9999)}`,
-      experienceYears: randomInt(random, 0, 15),
+      phone: `010-${randomInt(random, PHONE_SEGMENT_MIN, PHONE_SEGMENT_MAX)}-${randomInt(random, PHONE_SEGMENT_MIN, PHONE_SEGMENT_MAX)}`,
+      experienceYears: randomInt(random, 0, MAX_EXPERIENCE_YEARS),
       education: pickWeighted(random, EDUCATION_WEIGHTS),
     }
   })

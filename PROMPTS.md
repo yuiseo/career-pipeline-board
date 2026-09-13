@@ -822,3 +822,40 @@ Zod: 승인, 외부 입력 전체
 - **체크 규칙 추가:** 구현 단계를 완료해 커밋할 때 PLAN과 FUNCTIONAL_SPEC 문서에 체크하도록 함.
 - **폴더 규칙 충돌:** AI가 AGENTS.md의 도메인 단위 폴더 규칙과 PLAN·기존 코드의 공통 계층(`types/`, `mocks/`, `api/`)이 어긋남을 지적함. 공통 계층은 `src/` 바로 아래에 두는 예외(a안)를 AGENTS.md에 추가하기로 함.
 - **초안 검토:** 위 예외를 추가한 뒤 AGENTS.md와 관련 문서 변경을 채택함.
+
+---
+
+## [candidate-model] AGENTS.md 규칙 적용 리팩터링
+
+### 프롬프트
+
+```
+(a)로 추가하고 docs(agents) 커밋 진행
+```
+
+(docs(agents) 커밋 후 AI가 앞서 제안한 순서대로 이미 커밋한 모델 코드를 AGENTS.md 규칙에 맞춤)
+
+### AI 출력 요지
+
+- zod 4.6.4 설치 (사용자 승인 범위). 처음 제안한 별도 `chore(deps)` 커밋 대신, 쓰는 곳이 없는 의존성 커밋을 피하려고 첫 사용 커밋에 포함
+- `src/types/candidate.ts`: `stageSchema`, `positionSchema`, `candidateSummarySchema`, `candidateDetailSchema`를 정의하고 모든 타입을 `z.infer`로 추론
+- `src/mocks/db.ts`: localStorage 데이터를 `storedDataSchema`(버전 리터럴 + 상세 스키마 배열)로 검증. 형변환(`as StoredData`) 제거
+- `src/mocks/seed.ts`: 매직 넘버를 상수로 이름 붙임 (`ID_DIGITS`, `MAX_EXPERIENCE_YEARS`, `PHONE_SEGMENT_MIN/MAX`). mulberry32 내부 숫자는 알고리즘 고정 상수라고 주석으로 명시
+
+### 메인 에이전트 검증
+
+- `pnpm build` / `lint` / `format:check` 통과. 임시 스크립트로 확인 후 삭제
+
+| 확인 항목 | 결과 |
+|---|---|
+| 리팩터링 전후 시드 결과 | 첫 레코드(`c-0001 한수윤 010-9032-4574`)가 이전 검증과 동일 → 생성 결과 변화 없음 |
+| 시드 1,000건 스키마 통과 | 통과 (`appliedAt` ISO 날짜, 이메일 형식 포함) |
+| 새로고침 후 유지 | 변경한 단계 유지 |
+| 레코드 하나의 stage가 잘못된 저장 데이터 | 스키마 검증 실패 → 시드 1,000건 재생성 |
+| 버전 불일치 · 깨진 JSON · `reset(0)` | 재생성 / 재생성 / 0건 유지 |
+
+### 리뷰 / 검증
+
+- **문제:** 스키마를 통해 타입 추론을 쉽게 가져가는 아키텍처를 계획 시점에 누락함. 구현 시점에 AGENTS.md 규칙으로 정리하면서 반영함.
+- **판단:** 타입을 Zod 스키마에서 추론하도록 바꾸고, 매직 넘버 등을 이름 있는 상수로 정의해 재사용할 수 있게 변경한 방향을 채택함.
+- **확인:** 현재 구현 사항(스키마·저장 데이터 검증·상수화)과 메인 에이전트 검증표를 확인 완료함.

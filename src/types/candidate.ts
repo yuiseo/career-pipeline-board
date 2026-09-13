@@ -1,3 +1,5 @@
+import { z } from "zod"
+
 export const STAGES = [
   "document",
   "interview",
@@ -6,7 +8,8 @@ export const STAGES = [
   "rejected",
 ] as const
 
-export type Stage = (typeof STAGES)[number]
+export const stageSchema = z.enum(STAGES)
+export type Stage = z.infer<typeof stageSchema>
 
 export const STAGE_LABEL: Record<Stage, string> = {
   document: "서류검토",
@@ -25,7 +28,8 @@ export const POSITIONS = [
   "data",
 ] as const
 
-export type Position = (typeof POSITIONS)[number]
+export const positionSchema = z.enum(POSITIONS)
+export type Position = z.infer<typeof positionSchema>
 
 export const POSITION_LABEL: Record<Position, string> = {
   frontend: "프론트엔드",
@@ -37,19 +41,21 @@ export const POSITION_LABEL: Record<Position, string> = {
 }
 
 /** 보드·카드용 목록 데이터 (GET /api/candidates) */
-export type CandidateSummary = {
-  id: string
-  name: string
-  position: Position
+export const candidateSummarySchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  position: positionSchema,
   /** 지원일 (YYYY-MM-DD) */
-  appliedAt: string
-  stage: Stage
-}
+  appliedAt: z.iso.date(),
+  stage: stageSchema,
+})
+export type CandidateSummary = z.infer<typeof candidateSummarySchema>
 
 /** 상세 패널용 데이터 (GET /api/candidates/:id) */
-export type CandidateDetail = CandidateSummary & {
-  email: string
-  phone: string
-  experienceYears: number
-  education: string
-}
+export const candidateDetailSchema = candidateSummarySchema.extend({
+  email: z.email(),
+  phone: z.string(),
+  experienceYears: z.number().int().nonnegative(),
+  education: z.string(),
+})
+export type CandidateDetail = z.infer<typeof candidateDetailSchema>

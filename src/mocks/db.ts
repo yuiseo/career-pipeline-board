@@ -1,14 +1,20 @@
-import type { CandidateDetail, Stage } from "@/types/candidate"
+import { z } from "zod"
+import {
+  candidateDetailSchema,
+  type CandidateDetail,
+  type Stage,
+} from "@/types/candidate"
 import { DEFAULT_SEED_COUNT, createSeedCandidates } from "./seed"
 
 export const STORAGE_KEY = "career-pipeline-board:candidates"
 /** 저장 데이터 구조가 바뀌면 올린다. 저장된 버전과 다르면 시드를 다시 생성한다. */
 export const STORAGE_VERSION = 1
 
-type StoredData = {
-  version: number
-  candidates: CandidateDetail[]
-}
+const storedDataSchema = z.object({
+  version: z.literal(STORAGE_VERSION),
+  candidates: z.array(candidateDetailSchema),
+})
+type StoredData = z.infer<typeof storedDataSchema>
 
 export type CandidateStorage = Pick<Storage, "getItem" | "setItem">
 
@@ -26,15 +32,16 @@ function readStoredCandidates(
   const raw = storage.getItem(STORAGE_KEY)
   if (raw === null) return undefined
 
+  let json: unknown
   try {
-    const data = JSON.parse(raw) as StoredData
-    if (data.version !== STORAGE_VERSION || !Array.isArray(data.candidates)) {
-      return undefined
-    }
-    return data.candidates
+    json = JSON.parse(raw)
   } catch {
     return undefined
   }
+
+  // 버전이 다르거나 구조가 스키마와 맞지 않으면 시드를 다시 만든다.
+  const result = storedDataSchema.safeParse(json)
+  return result.success ? result.data.candidates : undefined
 }
 
 export function createCandidateDb(storage: CandidateStorage): CandidateDb {
