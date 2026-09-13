@@ -1,6 +1,6 @@
 # 구현 계획
 
-설계 근거는 [DECISIONS.md](../DECISIONS.md), 커밋 규칙은 [CONTRIBUTING.md](../CONTRIBUTING.md)를 따른다.
+설계 근거는 [DECISIONS.md](../DECISIONS.md), 기능·인수 조건은 [FUNCTIONAL_SPEC.md](./FUNCTIONAL_SPEC.md), 커밋 규칙은 [CONTRIBUTING.md](../CONTRIBUTING.md)를 따른다.
 
 ## 진행 원칙
 
