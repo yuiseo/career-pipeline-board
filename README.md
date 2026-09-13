@@ -26,8 +26,7 @@ pnpm lint          # 린트 검사 (ESLint)
 <!-- mock-api 구현 후 작성: 구현 방식, 네트워크 지연(200~800ms)·실패(약 15%) 시뮬레이션 방법, persist 방식 -->
 
 ## 배포 링크
-
-<!-- (선택) 배포 후 작성 -->
+https://career-pipeline-board.vercel.app/
 
 ## 문서
 
