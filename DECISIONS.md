@@ -18,6 +18,7 @@
 - **(기본값 처리 가능)** 로딩 스켈레톤의 컬럼당 카드 자리 개수(3)는 DESIGN.md에 없어 시각적 플레이스홀더 기본값으로 정함.
 - **토스트는 sonner 없이 presentational 컴포넌트로 구현한다.** DESIGN 후보에 sonner가 있었으나 `next-themes` 추가 의존이 생겨, Must UI 단계에서는 props 기반 커스텀 토스트로 대체함.
 - **(기본값 처리 가능)** API 클라이언트에서 네트워크 단절 등 응답이 없을 때 `ApiError.status`는 `0`(`HTTP_STATUS.NETWORK_ERROR`)으로 두고, 메시지·스키마 파싱 실패 문구는 `API_ERROR_MESSAGE` 상수로 정함. 실패 응답 본문 타입은 `ApiErrorBody`, 클라이언트가 던지는 클래스는 `ApiError`로 구분한다.
+- **(기본값 처리 가능)** 이름 검색 매칭은 대소문자를 구분하는 `includes`로 둔다. FUNCTIONAL_SPEC에 대소문자 정책이 없어 기본값으로 처리함.
 - **react-grab을 개발 전용으로 반영한다.** UI 요소 디버깅을 쉽게 하기 위해 도입했다. `main.tsx`에서 `import.meta.env.DEV`일 때만 동적 import해 프로덕션 번들에 넣지 않는다. Vite 공식 `index.html` 방식은 html-proxy가 pnpm 패키지를 해석하지 못해 진입 파일로 옮겼다. Cursor agent/MCP 연동은 추가 패키지가 필요해 이번에는 넣지 않음.
 
 ## 2. 주요 설계 결정

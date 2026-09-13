@@ -1385,3 +1385,26 @@ tanstack-query를 통해 API 연동.
 
 - **상태:** 사용자 확인 후 커밋.
 
+
+---
+
+## [search-filter] 검색·필터 · URL 동기화
+
+### 프롬프트 1 (메인 → 서브 에이전트 search-filter)
+
+<details>
+<summary>서브 에이전트 작업 지시 요약</summary>
+
+- 순수 필터 + URL q/position replaceState(mock 파라미터 유지)
+- SearchFilterToolbar 연결, 필터 0건 + 초기화
+
+</details>
+
+### AI 출력 요지
+
+- draft vs applied 검색어, 직무 즉시 적용, 클라이언트 필터만(재조회 없음)
+
+### 리뷰 / 검증
+
+- **상태:** 사용자 확인 후 커밋. 새로고침 시 조건 복원 확인.
+

@@ -3,6 +3,8 @@ import { useState } from "react"
 import { ApiError } from "@/api/http"
 import CandidateDetailPanel from "@/features/candidate-detail/components/CandidateDetailPanel"
 import { useCandidateDetailQuery } from "@/features/candidate-detail/hooks/useCandidateDetailQuery"
+import { filterCandidates } from "@/features/filters/filterCandidates"
+import type { Position } from "@/types/candidate"
 import { STAGES } from "@/types/candidate"
 
 import { useCandidatesQuery } from "../hooks/useCandidatesQuery"
@@ -13,7 +15,17 @@ import BoardErrorView from "./BoardErrorView"
 import BoardLoadingSkeleton from "./BoardLoadingSkeleton"
 import CandidateCard from "./CandidateCard"
 
-function CandidateBoard() {
+interface CandidateBoardProps {
+  nameQuery: string
+  positions: ReadonlyArray<Position>
+  onResetFilters: () => void
+}
+
+function CandidateBoard({
+  nameQuery,
+  positions,
+  onResetFilters,
+}: CandidateBoardProps) {
   const { data, error, isPending, isError, refetch } = useCandidatesQuery()
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const detailQuery = useCandidateDetailQuery(selectedId)
@@ -38,7 +50,13 @@ function CandidateBoard() {
     return <BoardEmptyView variant="all" />
   }
 
-  const byStage = groupCandidatesByStage(data)
+  const filtered = filterCandidates(data, { nameQuery, positions })
+
+  if (filtered.length === 0) {
+    return <BoardEmptyView variant="filtered" onResetFilters={onResetFilters} />
+  }
+
+  const byStage = groupCandidatesByStage(filtered)
   const summary =
     selectedId == null
       ? null
