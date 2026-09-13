@@ -1197,3 +1197,26 @@ docs/PLAN.md:65-70 UI를 DESIGN.md 참고해 작성하고 CONTRIBUTING에 따라
 
 - **상태:** build/lint 통과. App 미연결. 브라우저 확인 대기.
 
+
+---
+
+## [search-filter-ui] 검색·직무 필터 UI
+
+### 프롬프트 1 (메인 → 서브 에이전트 search-filter-ui)
+
+<details>
+<summary>서브 에이전트 작업 지시 요약</summary>
+
+- props 기반 SearchFilterToolbar: 버튼/Enter 검색, 직무 체크 즉시, 선택 해제
+- URL 동기화·필터 순수 함수는 다음 단계
+
+</details>
+
+### AI 출력 요지
+
+- `SearchFilterToolbar.tsx`: Input+icon 버튼(36×36), Popover 체크박스, 선택 개수 Badge
+
+### 리뷰 / 검증
+
+- **상태:** build/lint 통과. URL sync 없음(의도). 브라우저 확인 대기.
+
