@@ -1,6 +1,5 @@
-import BoardColumn from "@/features/board/components/BoardColumn"
 import BoardPageLayout from "@/features/board/components/BoardPageLayout"
-import { STAGES } from "@/types/candidate"
+import CandidateBoard from "@/features/board/components/CandidateBoard"
 
 function App() {
   return (
@@ -8,9 +7,7 @@ function App() {
       title="채용 파이프라인 보드"
       description="지원자를 전형 단계별로 확인하고 관리합니다."
     >
-      {STAGES.map((stage) => (
-        <BoardColumn key={stage} stage={stage} count={0} />
-      ))}
+      <CandidateBoard />
     </BoardPageLayout>
   )
 }
